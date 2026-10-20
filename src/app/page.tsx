@@ -753,9 +753,6 @@ export default function DashboardPage() {
           <p>
             Infopark Internship Calling Tracker &bull; Infopark Kochi Phase 1 Directory (208 Companies)
           </p>
-          <p className="mt-1 text-slate-400">
-            Authorized MCA Outreach Team: Aibin, Milan, Edwin, Seba, Lakshmi
-          </p>
         </div>
       </footer>
     </div>

@@ -13,8 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            'Access denied. Enter your teammate name as both username and password (e.g., Aibin / Aibin).',
+          message: 'Invalid email or password. Please check your credentials and try again.',
         },
         { status: 401 }
       );
