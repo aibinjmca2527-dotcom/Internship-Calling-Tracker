@@ -109,6 +109,12 @@ grant select on public.approved_team_members to anon, authenticated;
 -- ATOMIC STORED PROCEDURES (RPC)
 -- =====================================================================
 
+-- Drop previous function overloads to prevent "function is not unique" (42725) errors
+drop function if exists public.reset_company_status(uuid);
+drop function if exists public.reset_company_status(uuid, text);
+drop function if exists public.mark_company_contacted(uuid, text);
+drop function if exists public.mark_company_contacted(uuid);
+
 -- 1. Mark Company as Contacted (Atomic with SELECT FOR UPDATE)
 create or replace function public.mark_company_contacted(
   p_company_id uuid,
@@ -192,8 +198,7 @@ $$;
 
 -- 2. Reset Company Status to Not Contacted (Atomic)
 create or replace function public.reset_company_status(
-  p_company_id uuid,
-  p_caller_name text default 'Team Member'
+  p_company_id uuid
 )
 returns jsonb
 language plpgsql
@@ -203,10 +208,7 @@ as $$
 declare
   v_company record;
   v_updated record;
-  v_cleaned_name text;
 begin
-  v_cleaned_name := coalesce(nullif(trim(p_caller_name), ''), 'Team Member');
-
   -- 1. Lock company row
   select * into v_company
   from public.companies
@@ -249,11 +251,11 @@ begin
     notes
   ) values (
     p_company_id,
-    v_cleaned_name,
+    'Team Member',
     'RESET_NOT_CONTACTED',
     'CONTACTED',
     'NOT_CONTACTED',
-    'Status reset by ' || v_cleaned_name
+    'Status reset to Not Contacted'
   );
 
   return jsonb_build_object(
@@ -264,9 +266,9 @@ begin
 end;
 $$;
 
--- Grant execution to anon and authenticated
-grant execute on function public.mark_company_contacted to anon, authenticated;
-grant execute on function public.reset_company_status to anon, authenticated;
+-- Grant execution to anon and authenticated with unambiguous signatures
+grant execute on function public.mark_company_contacted(uuid, text) to anon, authenticated;
+grant execute on function public.reset_company_status(uuid) to anon, authenticated;
 
 -- =====================================================================
 -- REALTIME PUBLICATION CONFIGURATION
