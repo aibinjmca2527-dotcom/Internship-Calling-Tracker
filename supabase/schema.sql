@@ -60,40 +60,40 @@ create index if not exists idx_contact_history_company on public.contact_history
 create index if not exists idx_contact_history_created on public.contact_history(created_at desc);
 
 -- =====================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
+-- ROW LEVEL SECURITY (RLS) POLICIES & PERMISSIONS
 -- =====================================================================
 alter table public.approved_team_members enable row level security;
 alter table public.companies enable row level security;
 alter table public.contact_history enable row level security;
 
--- Helper function: Check if authenticated user is approved
-create or replace function public.is_approved_user()
-returns boolean language sql security definer stable
-as $$
-  select exists (
-    select 1 from public.approved_team_members
-    where lower(email) = lower(trim(coalesce(auth.jwt()->>'email', '')))
-      and is_active = true
-  );
-$$;
+-- Drop existing restrictive policies if present
+drop policy if exists "Allow approved members to view team list" on public.approved_team_members;
+drop policy if exists "Allow approved members to select companies" on public.companies;
+drop policy if exists "Allow approved members to select history" on public.contact_history;
+drop policy if exists "Allow read access to companies" on public.companies;
+drop policy if exists "Allow read access to contact history" on public.contact_history;
+drop policy if exists "Allow read access to approved team members" on public.approved_team_members;
 
--- Policies for approved_team_members
-create policy "Allow approved members to view team list"
-  on public.approved_team_members for select
-  to authenticated
-  using (public.is_approved_user());
-
--- Policies for companies
-create policy "Allow approved members to select companies"
+-- Allow reading companies and contact history (with anon key or authenticated)
+create policy "Allow read access to companies"
   on public.companies for select
-  to authenticated
-  using (public.is_approved_user());
+  to anon, authenticated
+  using (true);
 
--- Policies for contact_history
-create policy "Allow approved members to select history"
+create policy "Allow read access to contact history"
   on public.contact_history for select
-  to authenticated
-  using (public.is_approved_user());
+  to anon, authenticated
+  using (true);
+
+create policy "Allow read access to approved team members"
+  on public.approved_team_members for select
+  to anon, authenticated
+  using (true);
+
+-- Grant table read permissions to anon and authenticated
+grant select on public.companies to anon, authenticated;
+grant select on public.contact_history to anon, authenticated;
+grant select on public.approved_team_members to anon, authenticated;
 
 -- =====================================================================
 -- ATOMIC STORED PROCEDURES (RPC)
@@ -110,43 +110,21 @@ security definer
 set search_path = public
 as $$
 declare
-  v_user_email text;
-  v_member record;
+  v_cleaned_name text;
   v_company record;
   v_updated record;
 begin
-  -- 1. Verify caller authentication and team membership
-  v_user_email := lower(trim(coalesce(auth.jwt()->>'email', '')));
-  if v_user_email = '' then
+  -- 1. Validate caller identity matches one of the 5 authorized team members
+  v_cleaned_name := trim(p_caller_name);
+  if v_cleaned_name not in ('Aibin', 'Milan', 'Edwin', 'Seba', 'Lakshmi') then
     return jsonb_build_object(
       'success', false, 
-      'error', 'UNAUTHENTICATED', 
-      'message', 'You must be signed in with an authorized Google account.'
+      'error', 'UNAUTHORIZED_CALLER', 
+      'message', 'Caller must be one of the authorized team members: Aibin, Milan, Edwin, Seba, or Lakshmi.'
     );
   end if;
 
-  select * into v_member
-  from public.approved_team_members
-  where lower(email) = v_user_email and is_active = true;
-
-  if not found then
-    return jsonb_build_object(
-      'success', false, 
-      'error', 'UNAUTHORIZED', 
-      'message', 'Access denied. You are not an approved team member.'
-    );
-  end if;
-
-  -- 2. Validate selected caller identity matches authenticated account
-  if lower(trim(p_caller_name)) <> lower(trim(v_member.display_name)) then
-    return jsonb_build_object(
-      'success', false, 
-      'error', 'NAME_MISMATCH', 
-      'message', 'Selected caller identity does not match your authenticated account (' || v_member.display_name || ').'
-    );
-  end if;
-
-  -- 3. Lock company row atomically with SELECT ... FOR UPDATE
+  -- 2. Lock company row atomically with SELECT ... FOR UPDATE
   select * into v_company
   from public.companies
   where id = p_company_id
@@ -160,7 +138,7 @@ begin
     );
   end if;
 
-  -- 4. Check if already contacted (Prevent simultaneous duplicate claiming)
+  -- 3. Check if already contacted (Prevent simultaneous duplicate claiming)
   if v_company.status = 'CONTACTED' then
     return jsonb_build_object(
       'success', false,
@@ -170,28 +148,25 @@ begin
     );
   end if;
 
-  -- 5. Atomically update status
+  -- 4. Atomically update status to CONTACTED
   update public.companies
   set status = 'CONTACTED',
-      called_by_user_id = auth.uid(),
-      called_by_name = v_member.display_name,
+      called_by_name = v_cleaned_name,
       contacted_at = now(),
       updated_at = now()
   where id = p_company_id
   returning * into v_updated;
 
-  -- 6. Insert into contact history
+  -- 5. Insert into contact history
   insert into public.contact_history (
     company_id,
-    changed_by_user_id,
     changed_by_name,
     action,
     previous_status,
     new_status
   ) values (
     p_company_id,
-    auth.uid(),
-    v_member.display_name,
+    v_cleaned_name,
     'MARK_CONTACTED',
     'NOT_CONTACTED',
     'CONTACTED'
@@ -207,7 +182,8 @@ $$;
 
 -- 2. Reset Company Status to Not Contacted (Atomic)
 create or replace function public.reset_company_status(
-  p_company_id uuid
+  p_company_id uuid,
+  p_caller_name text default 'Team Member'
 )
 returns jsonb
 language plpgsql
@@ -215,34 +191,13 @@ security definer
 set search_path = public
 as $$
 declare
-  v_user_email text;
-  v_member record;
   v_company record;
   v_updated record;
+  v_cleaned_name text;
 begin
-  -- 1. Check auth
-  v_user_email := lower(trim(coalesce(auth.jwt()->>'email', '')));
-  if v_user_email = '' then
-    return jsonb_build_object(
-      'success', false, 
-      'error', 'UNAUTHENTICATED', 
-      'message', 'You must be signed in.'
-    );
-  end if;
+  v_cleaned_name := coalesce(nullif(trim(p_caller_name), ''), 'Team Member');
 
-  select * into v_member
-  from public.approved_team_members
-  where lower(email) = v_user_email and is_active = true;
-
-  if not found then
-    return jsonb_build_object(
-      'success', false, 
-      'error', 'UNAUTHORIZED', 
-      'message', 'Access denied.'
-    );
-  end if;
-
-  -- 2. Lock company row
+  -- 1. Lock company row
   select * into v_company
   from public.companies
   where id = p_company_id
@@ -264,7 +219,7 @@ begin
     );
   end if;
 
-  -- 3. Reset company status
+  -- 2. Reset company status
   update public.companies
   set status = 'NOT_CONTACTED',
       called_by_user_id = null,
@@ -274,10 +229,9 @@ begin
   where id = p_company_id
   returning * into v_updated;
 
-  -- 4. Record history
+  -- 3. Record history
   insert into public.contact_history (
     company_id,
-    changed_by_user_id,
     changed_by_name,
     action,
     previous_status,
@@ -285,12 +239,11 @@ begin
     notes
   ) values (
     p_company_id,
-    auth.uid(),
-    v_member.display_name,
+    v_cleaned_name,
     'RESET_NOT_CONTACTED',
     'CONTACTED',
     'NOT_CONTACTED',
-    'Status reset by ' || v_member.display_name
+    'Status reset by ' || v_cleaned_name
   );
 
   return jsonb_build_object(
@@ -301,43 +254,9 @@ begin
 end;
 $$;
 
--- 3. Sync Team Member on Auth Login
-create or replace function public.sync_auth_user_member()
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_email text;
-  v_member record;
-begin
-  v_email := lower(trim(coalesce(auth.jwt()->>'email', '')));
-  if v_email = '' then
-    return jsonb_build_object('success', false, 'error', 'NO_EMAIL');
-  end if;
-
-  select * into v_member
-  from public.approved_team_members
-  where lower(email) = v_email and is_active = true;
-
-  if not found then
-    return jsonb_build_object('success', false, 'error', 'UNAUTHORIZED');
-  end if;
-
-  -- Update auth_user_id if not already linked
-  if v_member.auth_user_id is distinct from auth.uid() then
-    update public.approved_team_members
-    set auth_user_id = auth.uid()
-    where id = v_member.id;
-  end if;
-
-  return jsonb_build_object(
-    'success', true,
-    'member', row_to_json(v_member)
-  );
-end;
-$$;
+-- Grant execution to anon and authenticated
+grant execute on function public.mark_company_contacted to anon, authenticated;
+grant execute on function public.reset_company_status to anon, authenticated;
 
 -- =====================================================================
 -- REALTIME PUBLICATION CONFIGURATION

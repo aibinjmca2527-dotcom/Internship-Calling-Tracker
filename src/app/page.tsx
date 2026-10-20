@@ -139,11 +139,46 @@ export default function DashboardPage() {
       if (error) {
         console.error('[Supabase Fetch Error]:', error);
         addToast('error', 'Could not sync latest company list from server.');
+        // Fallback so the screen is never empty
+        setCompanies((prev) => {
+          if (prev.length === 0) {
+            return initialCompaniesData.map((c) => ({
+              id: `comp-${c.serial_number}`,
+              serial_number: c.serial_number,
+              company_name: c.company_name,
+              phone_number: c.phone_number,
+              status: 'NOT_CONTACTED',
+              called_by_user_id: null,
+              called_by_name: null,
+              contacted_at: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }));
+          }
+          return prev;
+        });
       } else if (data && data.length > 0) {
         setCompanies(data as Company[]);
         setConnectionStatus('connected');
       } else {
         console.warn('Companies table is empty in Supabase. Check database seed.');
+        setCompanies((prev) => {
+          if (prev.length === 0) {
+            return initialCompaniesData.map((c) => ({
+              id: `comp-${c.serial_number}`,
+              serial_number: c.serial_number,
+              company_name: c.company_name,
+              phone_number: c.phone_number,
+              status: 'NOT_CONTACTED',
+              called_by_user_id: null,
+              called_by_name: null,
+              contacted_at: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }));
+          }
+          return prev;
+        });
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -578,7 +613,7 @@ export default function DashboardPage() {
       <Header
         currentUser={currentUser}
         connectionStatus={connectionStatus}
-        isDemoMode={true}
+        isDemoMode={false}
         onSwitchTeammate={handleSwitchTeammate}
         onRefreshData={() => fetchAuthoritativeCompanies(true)}
         isRefreshing={isRefreshing}
