@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Company, ContactStatus, TeamMemberName, TEAM_MEMBERS } from '@/types';
+import { Company, ContactStatus, TeamMemberName, TEAM_MEMBERS, CallingPhase } from '@/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Header } from '@/components/Header';
 import { SummaryCards } from '@/components/SummaryCards';
@@ -14,12 +14,15 @@ import { ContactHistoryModal } from '@/components/ContactHistoryModal';
 import { ToastContainer, ToastMessage } from '@/components/Toast';
 import { ArrowUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import initialCompaniesData from '@/data/companies.json';
+import initialCompaniesPhase2Data from '@/data/companies_phase2.json';
 
-// Local storage key for demo testing across tabs
+// Local storage keys
 const LOCAL_STORAGE_COMPANIES_KEY = 'infopark_calling_companies_cache';
+const LOCAL_STORAGE_PHASE_KEY = 'infopark_calling_selected_phase';
 
 export default function DashboardPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedPhase, setSelectedPhase] = useState<CallingPhase>('Phase 1');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'reconnecting' | 'offline'>('connected');
@@ -67,8 +70,50 @@ export default function DashboardPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // 0. Fetch logged-in user from session cookie
+  // Helper to generate local fallback seed combining Phase 1 and Phase 2
+  const buildFallbackSeed = useCallback((): Company[] => {
+    const p1: Company[] = initialCompaniesData.map((c) => ({
+      id: `p1-${c.serial_number}`,
+      serial_number: c.serial_number,
+      company_name: c.company_name,
+      phone_number: c.phone_number,
+      status: 'NOT_CONTACTED',
+      phase: 'Phase 1',
+      called_by_user_id: null,
+      called_by_name: null,
+      contacted_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    const p2: Company[] = initialCompaniesPhase2Data.map((c) => ({
+      id: `p2-${c.serial_number}`,
+      serial_number: c.serial_number,
+      company_name: c.company_name,
+      phone_number: c.phone_number,
+      status: 'NOT_CONTACTED',
+      phase: 'Phase 2',
+      called_by_user_id: null,
+      called_by_name: null,
+      contacted_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    return [...p1, ...p2];
+  }, []);
+
+  // 0. Initialize selected phase from localStorage and fetch logged-in user
   useEffect(() => {
+    try {
+      const savedPhase = localStorage.getItem(LOCAL_STORAGE_PHASE_KEY) as CallingPhase;
+      if (savedPhase === 'Phase 1' || savedPhase === 'Phase 2') {
+        setSelectedPhase(savedPhase);
+      }
+    } catch {
+      // ignore
+    }
+
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
@@ -77,6 +122,17 @@ export default function DashboardPage() {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // Phase selection handler
+  const handleSelectPhase = useCallback((phase: CallingPhase) => {
+    setSelectedPhase(phase);
+    setCurrentPage(1);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_PHASE_KEY, phase);
+    } catch {
+      // ignore
+    }
   }, []);
 
   // 1. Fetch Authoritative Companies from Supabase Database
@@ -104,20 +160,8 @@ export default function DashboardPage() {
         // ignore cache parse error
       }
 
-      // Initialize from 208 companies dataset
-      const seeded: Company[] = initialCompaniesData.map((c) => ({
-        id: `comp-${c.serial_number}`,
-        serial_number: c.serial_number,
-        company_name: c.company_name,
-        phone_number: c.phone_number,
-        status: 'NOT_CONTACTED',
-        called_by_user_id: null,
-        called_by_name: null,
-        contacted_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
-
+      // Initialize from combined dataset
+      const seeded = buildFallbackSeed();
       setCompanies(seeded);
       try {
         localStorage.setItem(LOCAL_STORAGE_COMPANIES_KEY, JSON.stringify(seeded));
@@ -139,43 +183,25 @@ export default function DashboardPage() {
       if (error) {
         console.error('[Supabase Fetch Error]:', error);
         addToast('error', 'Could not sync latest company list from server.');
-        // Fallback so the screen is never empty
         setCompanies((prev) => {
           if (prev.length === 0) {
-            return initialCompaniesData.map((c) => ({
-              id: `comp-${c.serial_number}`,
-              serial_number: c.serial_number,
-              company_name: c.company_name,
-              phone_number: c.phone_number,
-              status: 'NOT_CONTACTED',
-              called_by_user_id: null,
-              called_by_name: null,
-              contacted_at: null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }));
+            return buildFallbackSeed();
           }
           return prev;
         });
       } else if (data && data.length > 0) {
-        setCompanies(data as Company[]);
+        // Ensure every record has a phase tag (defaults to 'Phase 1' safely)
+        const sanitized = data.map((c: Record<string, unknown>) => ({
+          ...c,
+          phase: (c.phase as string) || 'Phase 1',
+        })) as Company[];
+        setCompanies(sanitized);
         setConnectionStatus('connected');
       } else {
         console.warn('Companies table is empty in Supabase. Check database seed.');
         setCompanies((prev) => {
           if (prev.length === 0) {
-            return initialCompaniesData.map((c) => ({
-              id: `comp-${c.serial_number}`,
-              serial_number: c.serial_number,
-              company_name: c.company_name,
-              phone_number: c.phone_number,
-              status: 'NOT_CONTACTED',
-              called_by_user_id: null,
-              called_by_name: null,
-              contacted_at: null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }));
+            return buildFallbackSeed();
           }
           return prev;
         });
@@ -187,7 +213,7 @@ export default function DashboardPage() {
       setIsLoading(false);
       if (isManualRefresh) setIsRefreshing(false);
     }
-  }, [addToast]);
+  }, [addToast, buildFallbackSeed]);
 
   // 2. Initialize Authentication & Realtime Subscriptions
   useEffect(() => {
@@ -228,7 +254,12 @@ export default function DashboardPage() {
           { event: '*', schema: 'public', table: 'companies' },
           (payload) => {
             if (payload.eventType === 'UPDATE') {
-              const updated = payload.new as Company;
+              const updatedRaw = payload.new as Record<string, unknown>;
+              const updated: Company = {
+                ...(updatedRaw as unknown as Company),
+                phase: (updatedRaw.phase as string) || 'Phase 1',
+              };
+
               setCompanies((prev) =>
                 prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
               );
@@ -239,7 +270,12 @@ export default function DashboardPage() {
                 addToast('info', `${updated.company_name} status was reset.`);
               }
             } else if (payload.eventType === 'INSERT') {
-              const inserted = payload.new as Company;
+              const insertedRaw = payload.new as Record<string, unknown>;
+              const inserted: Company = {
+                ...(insertedRaw as unknown as Company),
+                phase: (insertedRaw.phase as string) || 'Phase 1',
+              };
+
               setCompanies((prev) => {
                 if (prev.some((c) => c.id === inserted.id)) return prev;
                 return [...prev, inserted].sort((a, b) => a.serial_number - b.serial_number);
@@ -361,7 +397,7 @@ export default function DashboardPage() {
         };
       }
 
-      const updatedCompany: Company = {
+      const updated: Company = {
         ...target,
         status: 'CONTACTED',
         called_by_name: callerName,
@@ -369,20 +405,22 @@ export default function DashboardPage() {
         updated_at: new Date().toISOString(),
       };
 
-      const nextList = currentList.map((c) => (c.id === companyId ? updatedCompany : c));
-      setCompanies(nextList);
+      const updatedList = currentList.map((c) => (c.id === companyId ? updated : c));
+      setCompanies(updatedList);
       try {
-        localStorage.setItem(LOCAL_STORAGE_COMPANIES_KEY, JSON.stringify(nextList));
-        if (typeof BroadcastChannel !== 'undefined') {
-          const bc = new BroadcastChannel('infopark_realtime');
-          bc.postMessage({ type: 'COMPANY_UPDATED', company: updatedCompany });
-          bc.close();
-        }
+        localStorage.setItem(LOCAL_STORAGE_COMPANIES_KEY, JSON.stringify(updatedList));
       } catch {
         // ignore
       }
 
-      addToast('success', `Marked ${updatedCompany.company_name} as Contacted by ${callerName}.`);
+      // Broadcast update across local browser tabs
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('infopark_realtime');
+        bc.postMessage({ type: 'COMPANY_UPDATED', company: updated });
+        bc.close();
+      }
+
+      addToast('success', `Marked ${updated.company_name} as Contacted.`);
       return { success: true };
     }
 
@@ -394,78 +432,79 @@ export default function DashboardPage() {
       });
 
       if (error) {
-        console.error('[RPC Error]:', error);
-        return {
-          success: false,
-          message: error.message || 'Database error occurred while saving status.',
-        };
+        console.error('RPC Error:', error);
+        addToast('error', error.message || 'Failed to update company status.');
+        return { success: false, message: error.message };
       }
 
-      if (data && !data.success) {
-        if (data.company) {
-          const freshCompany = data.company as Company;
+      const res = data as { success: boolean; error?: string; message?: string; company?: Company };
+
+      if (res.success && res.company) {
+        const updated = {
+          ...res.company,
+          phase: res.company.phase || 'Phase 1',
+        };
+        setCompanies((prev) =>
+          prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+        );
+        addToast('success', `Marked ${updated.company_name} as Contacted.`);
+        return { success: true };
+      } else {
+        if (res.error === 'ALREADY_CONTACTED' && res.company) {
+          const updated = {
+            ...res.company,
+            phase: res.company.phase || 'Phase 1',
+          };
           setCompanies((prev) =>
-            prev.map((c) => (c.id === freshCompany.id ? freshCompany : c))
+            prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
           );
         }
-        return {
-          success: false,
-          message: data.message || `This company was already marked as contacted.`,
-        };
+        addToast('error', res.message || 'Could not update status.');
+        return { success: false, message: res.message };
       }
-
-      if (data && data.success && data.company) {
-        const freshCompany = data.company as Company;
-        setCompanies((prev) =>
-          prev.map((c) => (c.id === freshCompany.id ? freshCompany : c))
-        );
-        addToast('success', `Marked ${freshCompany.company_name} as Contacted.`);
-        return { success: true };
-      }
-
-      return { success: false, message: 'Unrecognized response from server.' };
     } catch (err: unknown) {
-      console.error('Fatal contact error:', err);
-      const msg = err instanceof Error ? err.message : 'Network error.';
+      const msg = err instanceof Error ? err.message : 'Network failure.';
+      addToast('error', msg);
       return { success: false, message: msg };
     }
   };
 
   // 5. Handle Reset Company Status (Atomic RPC)
-  const handleConfirmResetStatus = async (
-    companyId: string
-  ): Promise<{ success: boolean; message?: string }> => {
+  const handleConfirmResetStatus = async (companyId: string): Promise<{ success: boolean; message?: string }> => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const hasSupabase = supabaseUrl && !supabaseUrl.includes('placeholder');
 
     if (!hasSupabase) {
+      // Local/Demo Mode Atomic Simulation
       const currentList = [...companies];
       const target = currentList.find((c) => c.id === companyId);
       if (!target) return { success: false, message: 'Company not found.' };
 
-      const updatedCompany: Company = {
+      const updated: Company = {
         ...target,
         status: 'NOT_CONTACTED',
-        called_by_user_id: null,
         called_by_name: null,
+        called_by_user_id: null,
         contacted_at: null,
         updated_at: new Date().toISOString(),
       };
 
-      const nextList = currentList.map((c) => (c.id === companyId ? updatedCompany : c));
-      setCompanies(nextList);
+      const updatedList = currentList.map((c) => (c.id === companyId ? updated : c));
+      setCompanies(updatedList);
       try {
-        localStorage.setItem(LOCAL_STORAGE_COMPANIES_KEY, JSON.stringify(nextList));
-        if (typeof BroadcastChannel !== 'undefined') {
-          const bc = new BroadcastChannel('infopark_realtime');
-          bc.postMessage({ type: 'COMPANY_UPDATED', company: updatedCompany });
-          bc.close();
-        }
+        localStorage.setItem(LOCAL_STORAGE_COMPANIES_KEY, JSON.stringify(updatedList));
       } catch {
         // ignore
       }
 
-      addToast('info', `Reset ${updatedCompany.company_name} to Not Contacted.`);
+      // Broadcast update across local browser tabs
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('infopark_realtime');
+        bc.postMessage({ type: 'COMPANY_UPDATED', company: updated });
+        bc.close();
+      }
+
+      addToast('info', `Reset ${updated.company_name} to Not Contacted.`);
       return { success: true };
     }
 
@@ -476,21 +515,30 @@ export default function DashboardPage() {
       });
 
       if (error) {
+        console.error('RPC Error:', error);
+        addToast('error', error.message || 'Failed to reset status.');
         return { success: false, message: error.message };
       }
 
-      if (data && data.success && data.company) {
-        const freshCompany = data.company as Company;
-        setCompanies((prev) =>
-          prev.map((c) => (c.id === freshCompany.id ? freshCompany : c))
-        );
-        addToast('info', `Reset ${freshCompany.company_name} to Not Contacted.`);
-        return { success: true };
-      }
+      const res = data as { success: boolean; error?: string; message?: string; company?: Company };
 
-      return { success: false, message: 'Could not reset company status.' };
+      if (res.success && res.company) {
+        const updated = {
+          ...res.company,
+          phase: res.company.phase || 'Phase 1',
+        };
+        setCompanies((prev) =>
+          prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+        );
+        addToast('info', `Reset ${updated.company_name} to Not Contacted.`);
+        return { success: true };
+      } else {
+        addToast('error', res.message || 'Could not reset status.');
+        return { success: false, message: res.message };
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Network error resetting status.';
+      const msg = err instanceof Error ? err.message : 'Network failure.';
+      addToast('error', msg);
       return { success: false, message: msg };
     }
   };
@@ -499,27 +547,34 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl && !supabaseUrl.includes('placeholder')) {
+        const supabase = getSupabaseBrowserClient();
+        await supabase.auth.signOut();
+      }
     } catch {
       // ignore
     }
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const hasSupabase = supabaseUrl && !supabaseUrl.includes('placeholder');
-    if (hasSupabase) {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        await supabase.auth.signOut();
-      } catch {
-        // ignore
-      }
-    }
-    localStorage.removeItem('infopark_dev_member');
-    localStorage.removeItem('infopark_user_session');
     window.location.href = '/login';
   };
 
-  // 7. Filter and Sort Companies
+  // Total counts for phase switcher badges
+  const phase1Count = useMemo(() => {
+    return companies.filter((c) => (c.phase || 'Phase 1') === 'Phase 1').length;
+  }, [companies]);
+
+  const phase2Count = useMemo(() => {
+    return companies.filter((c) => c.phase === 'Phase 2').length;
+  }, [companies]);
+
+  // Companies strictly belonging to the currently selected phase
+  const currentPhaseCompanies = useMemo(() => {
+    return companies.filter((c) => (c.phase || 'Phase 1') === selectedPhase);
+  }, [companies, selectedPhase]);
+
+  // 7. Filter and Sort Companies for current phase
   const filteredCompanies = useMemo(() => {
-    let result = [...companies];
+    let result = [...currentPhaseCompanies];
 
     const q = searchQuery.trim().toLowerCase();
     if (q) {
@@ -553,12 +608,12 @@ export default function DashboardPage() {
     });
 
     return result;
-  }, [companies, searchQuery, statusFilter, teammateFilter, sortBy]);
+  }, [currentPhaseCompanies, searchQuery, statusFilter, teammateFilter, sortBy]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter, teammateFilter, sortBy, pageSize]);
+  }, [selectedPhase, searchQuery, statusFilter, teammateFilter, sortBy, pageSize]);
 
   // Total pages
   const totalPages = useMemo(() => {
@@ -609,11 +664,15 @@ export default function DashboardPage() {
       {/* Fixed Toast Notifications */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Top Navigation Header */}
+      {/* Top Navigation Header with Phase Switcher */}
       <Header
         currentUser={currentUser}
         connectionStatus={connectionStatus}
         isDemoMode={false}
+        selectedPhase={selectedPhase}
+        onSelectPhase={handleSelectPhase}
+        phase1Count={phase1Count}
+        phase2Count={phase2Count}
         onSwitchTeammate={handleSwitchTeammate}
         onRefreshData={() => fetchAuthoritativeCompanies(true)}
         isRefreshing={isRefreshing}
@@ -622,8 +681,8 @@ export default function DashboardPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* Summary Statistics Cards */}
-        <SummaryCards companies={companies} />
+        {/* Summary Statistics Cards (calculated dynamically for current selected phase) */}
+        <SummaryCards companies={currentPhaseCompanies} />
 
         {/* Search, Filter & Sort Controls */}
         <SearchAndFilters
@@ -638,7 +697,7 @@ export default function DashboardPage() {
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
           totalFiltered={filteredCompanies.length}
-          totalOriginal={companies.length}
+          totalOriginal={currentPhaseCompanies.length}
           onResetFilters={handleResetFilters}
           searchInputRef={searchInputRef}
         />
@@ -647,7 +706,7 @@ export default function DashboardPage() {
         {isLoading ? (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs">
             <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p className="text-sm font-medium text-slate-500">Loading Infopark company directory...</p>
+            <p className="text-sm font-medium text-slate-500">Loading {selectedPhase} company directory...</p>
           </div>
         ) : (
           <>
@@ -665,7 +724,7 @@ export default function DashboardPage() {
             <div className="block md:hidden space-y-3">
               {paginatedCompanies.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-                  No companies found matching your search.
+                  No companies found in {selectedPhase} matching your search.
                 </div>
               ) : (
                 paginatedCompanies.map((company) => (
@@ -694,7 +753,7 @@ export default function DashboardPage() {
                       filteredCompanies.length
                     )}
                   </strong>{' '}
-                  of <strong className="text-slate-900 font-bold">{filteredCompanies.length}</strong> companies
+                  of <strong className="text-slate-900 font-bold">{filteredCompanies.length}</strong> companies in {selectedPhase}
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -748,7 +807,7 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* Floating Scroll to Top Button for phones & desktop */}
+      {/* Floating Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
@@ -786,7 +845,7 @@ export default function DashboardPage() {
       <footer className="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4">
           <p>
-            Infopark Internship Calling Tracker &bull; Infopark Kochi Phase 1 Directory (208 Companies)
+            Infopark Internship Calling Tracker &bull; Infopark Kochi &bull; {selectedPhase} ({currentPhaseCompanies.length} Companies)
           </p>
         </div>
       </footer>

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Shield, LogOut, RefreshCw, UserCheck, ChevronDown } from 'lucide-react';
-import { TEAM_MEMBERS, TeamMemberName } from '@/types';
+import { Shield, LogOut, RefreshCw, UserCheck, ChevronDown, Layers } from 'lucide-react';
+import { TEAM_MEMBERS, TeamMemberName, CallingPhase } from '@/types';
 
 interface HeaderProps {
   currentUser: {
@@ -11,6 +11,10 @@ interface HeaderProps {
   };
   connectionStatus: 'connected' | 'reconnecting' | 'offline';
   isDemoMode?: boolean;
+  selectedPhase: CallingPhase;
+  onSelectPhase: (phase: CallingPhase) => void;
+  phase1Count?: number;
+  phase2Count?: number;
   onSwitchTeammate?: (name: TeamMemberName) => void;
   onRefreshData: () => void;
   isRefreshing: boolean;
@@ -21,6 +25,10 @@ export function Header({
   currentUser,
   connectionStatus,
   isDemoMode = false,
+  selectedPhase,
+  onSelectPhase,
+  phase1Count,
+  phase2Count,
   onSwitchTeammate,
   onRefreshData,
   isRefreshing,
@@ -92,9 +100,59 @@ export function Header({
                 </div>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate hidden sm:block">
-                Team Internship Outreach &bull; Infopark Kochi Phase 1
+                Team Internship Outreach &bull; Infopark Kochi &bull; <span className="font-semibold text-blue-700">{selectedPhase}</span>
               </p>
             </div>
+          </div>
+
+          {/* Center (Desktop / Tablet): Prominent Phase Selector */}
+          <div className="hidden sm:flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => onSelectPhase('Phase 1')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                selectedPhase === 'Phase 1'
+                  ? 'bg-white text-blue-700 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-blue-600" />
+              <span>Phase 1</span>
+              {phase1Count !== undefined && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    selectedPhase === 'Phase 1'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {phase1Count}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectPhase('Phase 2')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                selectedPhase === 'Phase 2'
+                  ? 'bg-white text-blue-700 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Phase 2</span>
+              {phase2Count !== undefined && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    selectedPhase === 'Phase 2'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {phase2Count}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Right: Teammate Profile, Refresh & Sign Out */}
@@ -170,6 +228,38 @@ export function Header({
               <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Phase Switcher Row */}
+      <div className="sm:hidden flex items-center justify-between px-3.5 py-1.5 bg-slate-50 border-t border-slate-200/80">
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+          <Layers className="w-3.5 h-3.5 text-blue-600" />
+          Select Phase:
+        </span>
+        <div className="flex items-center bg-slate-200/70 p-0.5 rounded-lg border border-slate-300/60 text-xs">
+          <button
+            type="button"
+            onClick={() => onSelectPhase('Phase 1')}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+              selectedPhase === 'Phase 1'
+                ? 'bg-white text-blue-700 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Phase 1 {phase1Count !== undefined ? `(${phase1Count})` : ''}
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectPhase('Phase 2')}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+              selectedPhase === 'Phase 2'
+                ? 'bg-white text-blue-700 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Phase 2 {phase2Count !== undefined ? `(${phase2Count})` : ''}
+          </button>
         </div>
       </div>
     </header>

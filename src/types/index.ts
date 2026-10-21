@@ -1,4 +1,5 @@
 export type ContactStatus = 'NOT_CONTACTED' | 'CONTACTED';
+export type CallingPhase = 'Phase 1' | 'Phase 2';
 
 export interface Company {
   id: string;
@@ -6,6 +7,7 @@ export interface Company {
   company_name: string;
   phone_number: string;
   status: ContactStatus;
+  phase?: string;
   called_by_user_id: string | null;
   called_by_name: string | null;
   contacted_at: string | null;
