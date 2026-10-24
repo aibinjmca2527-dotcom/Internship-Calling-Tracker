@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Company, ContactHistoryItem } from '@/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { History, X, Clock, User, CheckCircle2, RotateCcw } from 'lucide-react';
+import { History, X, Clock, User, CheckCircle2, RotateCcw, PhoneOff } from 'lucide-react';
 import { formatContactDate } from '@/lib/phone-utils';
 
 interface ContactHistoryModalProps {
@@ -92,11 +92,15 @@ export function ContactHistoryModal({
                     className={`absolute -left-2.5 top-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white ${
                       item.action === 'MARK_CONTACTED'
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-amber-500 text-white'
+                        : item.action === 'MARK_NO_ANSWER'
+                        ? 'bg-amber-500 text-white'
+                        : 'bg-slate-500 text-white'
                     }`}
                   >
                     {item.action === 'MARK_CONTACTED' ? (
                       <CheckCircle2 className="w-3 h-3" />
+                    ) : item.action === 'MARK_NO_ANSWER' ? (
+                      <PhoneOff className="w-3 h-3" />
                     ) : (
                       <RotateCcw className="w-3 h-3" />
                     )}
@@ -107,6 +111,8 @@ export function ContactHistoryModal({
                       <span className="font-bold text-slate-900">
                         {item.action === 'MARK_CONTACTED'
                           ? 'Marked as Contacted'
+                          : item.action === 'MARK_NO_ANSWER'
+                          ? 'Marked as Did Not Pick Up'
                           : 'Reset to Not Contacted'}
                       </span>
                       <span className="text-[11px] text-slate-400 font-mono">

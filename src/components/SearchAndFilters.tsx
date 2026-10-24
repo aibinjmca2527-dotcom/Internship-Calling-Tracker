@@ -4,7 +4,7 @@ import React from 'react';
 import { Search, Filter, X, ArrowUpDown, Phone, UserCheck, Layers } from 'lucide-react';
 import { TEAM_MEMBERS, TeamMemberName } from '@/types';
 
-export type StatusFilter = 'ALL' | 'NOT_CONTACTED' | 'CONTACTED';
+export type StatusFilter = 'ALL' | 'NOT_CONTACTED' | 'CONTACTED' | 'NO_ANSWER';
 export type SortOption = 'SERIAL_ASC' | 'SERIAL_DESC' | 'NAME_ASC' | 'NAME_DESC';
 export type PageSizeOption = 25 | 50 | 100 | 'ALL';
 
@@ -115,7 +115,7 @@ export function SearchAndFilters({
               onClick={() => onStatusFilterChange('NOT_CONTACTED')}
               className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md transition-colors text-center ${
                 statusFilter === 'NOT_CONTACTED'
-                  ? 'bg-white text-amber-800 font-bold shadow-xs'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -131,6 +131,17 @@ export function SearchAndFilters({
               }`}
             >
               Contacted
+            </button>
+            <button
+              type="button"
+              onClick={() => onStatusFilterChange('NO_ANSWER')}
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md transition-colors text-center ${
+                statusFilter === 'NO_ANSWER'
+                  ? 'bg-white text-amber-800 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              No Answer
             </button>
           </div>
 

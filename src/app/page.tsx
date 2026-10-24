@@ -266,6 +266,8 @@ export default function DashboardPage() {
 
               if (updated.status === 'CONTACTED') {
                 addToast('info', `${updated.called_by_name} marked ${updated.company_name} as Contacted.`);
+              } else if (updated.status === 'NO_ANSWER') {
+                addToast('info', `${updated.called_by_name} marked ${updated.company_name} as Did Not Pick Up.`);
               } else if (updated.status === 'NOT_CONTACTED') {
                 addToast('info', `${updated.company_name} status was reset.`);
               }
@@ -316,6 +318,8 @@ export default function DashboardPage() {
             );
             if (updated.status === 'CONTACTED') {
               addToast('info', `${updated.called_by_name} marked ${updated.company_name} as Contacted.`);
+            } else if (updated.status === 'NO_ANSWER') {
+              addToast('info', `${updated.called_by_name} marked ${updated.company_name} as Did Not Pick Up.`);
             } else {
               addToast('info', `${updated.company_name} was reset to Not Contacted.`);
             }
@@ -376,10 +380,11 @@ export default function DashboardPage() {
     };
   }, [fetchAuthoritativeCompanies, addToast]);
 
-  // 4. Handle Mark Company Contacted (Atomic RPC)
+  // 4. Handle Mark Company Contacted or Did Not Pick Up (Atomic RPC)
   const handleConfirmMarkContacted = async (
     companyId: string,
-    callerName: string
+    callerName: string,
+    targetStatus: ContactStatus = 'CONTACTED'
   ): Promise<{ success: boolean; message?: string }> => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const hasSupabase = supabaseUrl && !supabaseUrl.includes('placeholder');
@@ -390,7 +395,7 @@ export default function DashboardPage() {
       const target = currentList.find((c) => c.id === companyId);
       if (!target) return { success: false, message: 'Company not found.' };
 
-      if (target.status === 'CONTACTED') {
+      if (target.status === 'CONTACTED' && targetStatus === 'CONTACTED' && target.called_by_name !== callerName) {
         return {
           success: false,
           message: `This company was already marked as contacted by ${target.called_by_name}.`,
@@ -399,7 +404,7 @@ export default function DashboardPage() {
 
       const updated: Company = {
         ...target,
-        status: 'CONTACTED',
+        status: targetStatus,
         called_by_name: callerName,
         contacted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -420,7 +425,11 @@ export default function DashboardPage() {
         bc.close();
       }
 
-      addToast('success', `Marked ${updated.company_name} as Contacted.`);
+      if (targetStatus === 'NO_ANSWER') {
+        addToast('info', `Marked ${updated.company_name} as Did Not Pick Up.`);
+      } else {
+        addToast('success', `Marked ${updated.company_name} as Contacted.`);
+      }
       return { success: true };
     }
 
@@ -429,6 +438,7 @@ export default function DashboardPage() {
       const { data, error } = await supabase.rpc('mark_company_contacted', {
         p_company_id: companyId,
         p_caller_name: callerName,
+        p_status: targetStatus,
       });
 
       if (error) {
@@ -447,7 +457,11 @@ export default function DashboardPage() {
         setCompanies((prev) =>
           prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
         );
-        addToast('success', `Marked ${updated.company_name} as Contacted.`);
+        if (targetStatus === 'NO_ANSWER') {
+          addToast('info', `Marked ${updated.company_name} as Did Not Pick Up.`);
+        } else {
+          addToast('success', `Marked ${updated.company_name} as Contacted.`);
+        }
         return { success: true };
       } else {
         if (res.error === 'ALREADY_CONTACTED' && res.company) {
@@ -589,12 +603,14 @@ export default function DashboardPage() {
       result = result.filter((c) => c.status === 'NOT_CONTACTED');
     } else if (statusFilter === 'CONTACTED') {
       result = result.filter((c) => c.status === 'CONTACTED');
+    } else if (statusFilter === 'NO_ANSWER') {
+      result = result.filter((c) => c.status === 'NO_ANSWER');
     }
 
     if (teammateFilter !== 'ALL') {
       result = result.filter(
         (c) =>
-          c.status === 'CONTACTED' &&
+          c.status !== 'NOT_CONTACTED' &&
           c.called_by_name?.toLowerCase() === teammateFilter.toLowerCase()
       );
     }

@@ -30,7 +30,7 @@ create table if not exists public.companies (
   serial_number integer not null unique,
   company_name text not null unique,
   phone_number text not null,
-  status text not null default 'NOT_CONTACTED' check (status in ('NOT_CONTACTED', 'CONTACTED')),
+  status text not null default 'NOT_CONTACTED' check (status in ('NOT_CONTACTED', 'CONTACTED', 'NO_ANSWER')),
   called_by_user_id uuid references auth.users(id) on delete set null,
   called_by_name text,
   contacted_at timestamptz,
@@ -49,7 +49,7 @@ create table if not exists public.contact_history (
   company_id uuid not null references public.companies(id) on delete cascade,
   changed_by_user_id uuid references auth.users(id) on delete set null,
   changed_by_name text not null,
-  action text not null check (action in ('MARK_CONTACTED', 'RESET_NOT_CONTACTED')),
+  action text not null check (action in ('MARK_CONTACTED', 'MARK_NO_ANSWER', 'RESET_NOT_CONTACTED')),
   previous_status text not null,
   new_status text not null,
   notes text,
@@ -103,12 +103,14 @@ grant select on public.approved_team_members to anon, authenticated;
 drop function if exists public.reset_company_status(uuid);
 drop function if exists public.reset_company_status(uuid, text);
 drop function if exists public.mark_company_contacted(uuid, text);
+drop function if exists public.mark_company_contacted(uuid, text, text);
 drop function if exists public.mark_company_contacted(uuid);
 
--- 1. Mark Company as Contacted (Atomic with SELECT FOR UPDATE)
+-- 1. Mark Company as Contacted or Did Not Pick Up (Atomic with SELECT FOR UPDATE)
 create or replace function public.mark_company_contacted(
   p_company_id uuid,
-  p_caller_name text
+  p_caller_name text,
+  p_status text default 'CONTACTED'
 )
 returns jsonb
 language plpgsql
@@ -117,6 +119,7 @@ set search_path = public
 as $$
 declare
   v_cleaned_name text;
+  v_target_status text;
   v_company record;
   v_updated record;
 begin
@@ -130,7 +133,17 @@ begin
     );
   end if;
 
-  -- 2. Lock company row atomically with SELECT ... FOR UPDATE
+  -- 2. Validate target status
+  v_target_status := coalesce(nullif(trim(p_status), ''), 'CONTACTED');
+  if v_target_status not in ('CONTACTED', 'NO_ANSWER') then
+    return jsonb_build_object(
+      'success', false,
+      'error', 'INVALID_STATUS',
+      'message', 'Status must be either CONTACTED or NO_ANSWER.'
+    );
+  end if;
+
+  -- 3. Lock company row atomically with SELECT ... FOR UPDATE
   select * into v_company
   from public.companies
   where id = p_company_id
@@ -144,8 +157,8 @@ begin
     );
   end if;
 
-  -- 3. Check if already contacted (Prevent simultaneous duplicate claiming)
-  if v_company.status = 'CONTACTED' then
+  -- 4. Check if already contacted (Prevent simultaneous duplicate claiming if another teammate marked as contacted)
+  if v_company.status = 'CONTACTED' and v_target_status = 'CONTACTED' and v_company.called_by_name <> v_cleaned_name then
     return jsonb_build_object(
       'success', false,
       'error', 'ALREADY_CONTACTED',
@@ -154,33 +167,35 @@ begin
     );
   end if;
 
-  -- 4. Atomically update status to CONTACTED
+  -- 5. Atomically update status
   update public.companies
-  set status = 'CONTACTED',
+  set status = v_target_status,
       called_by_name = v_cleaned_name,
       contacted_at = now(),
       updated_at = now()
   where id = p_company_id
   returning * into v_updated;
 
-  -- 5. Insert into contact history
+  -- 6. Insert into contact history
   insert into public.contact_history (
     company_id,
     changed_by_name,
     action,
     previous_status,
-    new_status
+    new_status,
+    notes
   ) values (
     p_company_id,
     v_cleaned_name,
-    'MARK_CONTACTED',
-    'NOT_CONTACTED',
-    'CONTACTED'
+    case when v_target_status = 'NO_ANSWER' then 'MARK_NO_ANSWER' else 'MARK_CONTACTED' end,
+    v_company.status,
+    v_target_status,
+    case when v_target_status = 'NO_ANSWER' then 'Call attempted - Did not pick up' else 'Call answered - Contacted successfully' end
   );
 
   return jsonb_build_object(
     'success', true,
-    'message', 'Company successfully marked as contacted.',
+    'message', case when v_target_status = 'NO_ANSWER' then 'Company marked as Did Not Pick Up.' else 'Company successfully marked as contacted.' end,
     'company', row_to_json(v_updated)
   );
 end;
@@ -243,7 +258,7 @@ begin
     p_company_id,
     'Team Member',
     'RESET_NOT_CONTACTED',
-    'CONTACTED',
+    v_company.status,
     'NOT_CONTACTED',
     'Status reset to Not Contacted'
   );
@@ -257,7 +272,7 @@ end;
 $$;
 
 -- Grant execution to anon and authenticated with unambiguous signatures
-grant execute on function public.mark_company_contacted(uuid, text) to anon, authenticated;
+grant execute on function public.mark_company_contacted(uuid, text, text) to anon, authenticated;
 grant execute on function public.reset_company_status(uuid) to anon, authenticated;
 
 -- =====================================================================

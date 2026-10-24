@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Company, TEAM_MEMBERS } from '@/types';
-import { X, CheckCircle2, Phone, AlertCircle, User } from 'lucide-react';
+import { Company, ContactStatus, TEAM_MEMBERS } from '@/types';
+import { X, CheckCircle2, Phone, AlertCircle, User, PhoneOff, PhoneCall } from 'lucide-react';
 
 interface MarkContactedModalProps {
   company: Company | null;
   isOpen: boolean;
   currentUserName: string;
   onClose: () => void;
-  onConfirm: (companyId: string, callerName: string) => Promise<{ success: boolean; message?: string }>;
+  onConfirm: (companyId: string, callerName: string, status: ContactStatus) => Promise<{ success: boolean; message?: string }>;
 }
 
 export function MarkContactedModal({
@@ -20,12 +20,15 @@ export function MarkContactedModal({
   onConfirm,
 }: MarkContactedModalProps) {
   const [selectedCaller, setSelectedCaller] = useState<string>(currentUserName);
+  const [callOutcome, setCallOutcome] = useState<'CONTACTED' | 'NO_ANSWER'>('CONTACTED');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedCaller(currentUserName);
+      // If company was already marked as NO_ANSWER, default to CONTACTED so they can easily update to answered
+      setCallOutcome('CONTACTED');
       setErrorMessage(null);
       setIsSubmitting(false);
     }
@@ -41,9 +44,9 @@ export function MarkContactedModal({
       setIsSubmitting(true);
       setErrorMessage(null);
 
-      const result = await onConfirm(company.id, selectedCaller);
+      const result = await onConfirm(company.id, selectedCaller, callOutcome);
       if (!result.success) {
-        setErrorMessage(result.message || 'Failed to mark company as contacted.');
+        setErrorMessage(result.message || 'Failed to update company call record.');
         setIsSubmitting(false);
       } else {
         setIsSubmitting(false);
@@ -65,12 +68,18 @@ export function MarkContactedModal({
         {/* Header */}
         <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              callOutcome === 'CONTACTED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+            }`}>
+              {callOutcome === 'CONTACTED' ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <PhoneOff className="w-5 h-5" />
+              )}
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">Mark as Contacted</h2>
-              <p className="text-xs text-slate-500">Record outreach status and caller attribution</p>
+              <h2 className="text-base font-bold text-slate-900 leading-tight">Record Call Result</h2>
+              <p className="text-xs text-slate-500">Log outreach status and teammate attribution</p>
             </div>
           </div>
           <button
@@ -91,7 +100,9 @@ export function MarkContactedModal({
               <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                 #{company.serial_number}
               </span>
-              <span className="text-xs text-slate-500">Infopark Kochi Phase 1</span>
+              <span className="text-xs text-slate-500 font-medium">
+                Infopark Kochi {company.phase || 'Phase 1'}
+              </span>
             </div>
             <p className="text-sm font-bold text-slate-900 leading-snug">{company.company_name}</p>
             <div className="flex items-center gap-1.5 text-xs text-slate-600 pt-1">
@@ -110,10 +121,70 @@ export function MarkContactedModal({
             </div>
           )}
 
+          {/* Call Result Selection (Did they answer or not?) */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Call Result
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setCallOutcome('CONTACTED')}
+                disabled={isSubmitting}
+                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                  callOutcome === 'CONTACTED'
+                    ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-950 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    callOutcome === 'CONTACTED' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  {callOutcome === 'CONTACTED' && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-bold leading-tight">Call Answered</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Spoke with company</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCallOutcome('NO_ANSWER')}
+                disabled={isSubmitting}
+                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                  callOutcome === 'NO_ANSWER'
+                    ? 'bg-amber-50/80 border-amber-500 ring-2 ring-amber-500/20 text-amber-950 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    callOutcome === 'NO_ANSWER' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    <PhoneOff className="w-4 h-4" />
+                  </div>
+                  {callOutcome === 'NO_ANSWER' && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-bold leading-tight">Did Not Pick Up</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">No answer / busy</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Who contacted this company? */}
           <div className="space-y-1.5">
             <label htmlFor="caller-select" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Who contacted this company?
+              Who made this call?
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -149,15 +220,27 @@ export function MarkContactedModal({
             <button
               type="submit"
               disabled={isSubmitting || !selectedCaller}
-              className="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+              className={`w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white rounded-lg shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px] ${
+                callOutcome === 'CONTACTED'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800'
+                  : 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
+              }`}
             >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Saving...</span>
                 </>
+              ) : callOutcome === 'CONTACTED' ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Confirm Contacted</span>
+                </>
               ) : (
-                <span>Confirm Contacted</span>
+                <>
+                  <PhoneOff className="w-4 h-4" />
+                  <span>Save as Did Not Pick Up</span>
+                </>
               )}
             </button>
           </div>

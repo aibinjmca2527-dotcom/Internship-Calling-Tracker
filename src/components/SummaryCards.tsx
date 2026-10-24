@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Building2, PhoneCall, PhoneOff, CheckCircle2, Users } from 'lucide-react';
+import { Building2, PhoneCall, PhoneOff, CheckCircle2, Users, CircleDot } from 'lucide-react';
 import { Company, TEAM_MEMBERS } from '@/types';
 
 interface SummaryCardsProps {
@@ -11,15 +11,19 @@ interface SummaryCardsProps {
 export function SummaryCards({ companies }: SummaryCardsProps) {
   const total = companies.length;
   const contacted = companies.filter((c) => c.status === 'CONTACTED').length;
-  const notContacted = total - contacted;
+  const noAnswer = companies.filter((c) => c.status === 'NO_ANSWER').length;
+  const notContacted = companies.filter((c) => c.status === 'NOT_CONTACTED').length;
   const percentage = total > 0 ? ((contacted / total) * 100).toFixed(1) : '0.0';
 
-  // Count per teammate
+  // Count per teammate (Contacted and No Answer)
   const teammateCounts = TEAM_MEMBERS.map((member) => {
-    const count = companies.filter(
+    const contactedCount = companies.filter(
       (c) => c.status === 'CONTACTED' && c.called_by_name?.toLowerCase() === member.toLowerCase()
     ).length;
-    return { name: member, count };
+    const noAnswerCount = companies.filter(
+      (c) => c.status === 'NO_ANSWER' && c.called_by_name?.toLowerCase() === member.toLowerCase()
+    ).length;
+    return { name: member, contacted: contactedCount, noAnswer: noAnswerCount };
   });
 
   return (
@@ -40,7 +44,7 @@ export function SummaryCards({ companies }: SummaryCardsProps) {
         {/* Card 2: Contacted */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
-            <PhoneCall className="w-5 h-5" />
+            <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Contacted</p>
@@ -55,15 +59,33 @@ export function SummaryCards({ companies }: SummaryCardsProps) {
           </div>
         </div>
 
-        {/* Card 3: Not Contacted */}
+        {/* Card 3: Did Not Pick Up */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-100">
             <PhoneOff className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Remaining</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Did Not Pick Up</p>
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl sm:text-2xl font-bold text-amber-700 leading-tight">
+                {noAnswer}
+              </span>
+              <span className="text-xs font-medium text-slate-400">
+                to retry
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Remaining (Not Contacted) */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center flex-shrink-0 border border-slate-200">
+            <CircleDot className="w-5 h-5 text-slate-400" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Remaining</p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl sm:text-2xl font-bold text-slate-800 leading-tight">
                 {notContacted}
               </span>
               <span className="text-xs font-medium text-slate-400">
@@ -71,23 +93,6 @@ export function SummaryCards({ companies }: SummaryCardsProps) {
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Card 4: Progress Percentage */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Overall Progress</span>
-            <span className="text-xs font-bold text-blue-700">{percentage}%</span>
-          </div>
-          <div className="mt-2 w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${Math.min(100, Math.max(0, parseFloat(percentage)))}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {contacted} of {total} companies contacted
-          </p>
         </div>
       </div>
 
@@ -105,7 +110,10 @@ export function SummaryCards({ companies }: SummaryCardsProps) {
             >
               <span className="w-2 h-2 rounded-full bg-blue-500"></span>
               <span className="font-semibold text-slate-900">{t.name}:</span>
-              <span className="text-slate-600 font-bold">{t.count}</span>
+              <span className="text-emerald-700 font-bold">{t.contacted}</span>
+              {t.noAnswer > 0 && (
+                <span className="text-amber-700 font-medium">({t.noAnswer} missed)</span>
+              )}
             </div>
           ))}
         </div>

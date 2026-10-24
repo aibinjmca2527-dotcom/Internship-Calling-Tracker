@@ -1,4 +1,4 @@
-export type ContactStatus = 'NOT_CONTACTED' | 'CONTACTED';
+export type ContactStatus = 'NOT_CONTACTED' | 'CONTACTED' | 'NO_ANSWER';
 export type CallingPhase = 'Phase 1' | 'Phase 2';
 
 export interface Company {
@@ -29,7 +29,7 @@ export interface ContactHistoryItem {
   company_id: string;
   changed_by_user_id: string | null;
   changed_by_name: string;
-  action: 'MARK_CONTACTED' | 'RESET_NOT_CONTACTED';
+  action: 'MARK_CONTACTED' | 'MARK_NO_ANSWER' | 'RESET_NOT_CONTACTED';
   previous_status: ContactStatus;
   new_status: ContactStatus;
   notes?: string | null;
