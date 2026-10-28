@@ -5,13 +5,13 @@
     "company_name": "9Commerce Technologies",
     "email": "hr@commerce9.io",
     "website": "http://www.commerce9.io",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:16.244Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-2",
@@ -19,13 +19,13 @@
     "company_name": "Aabasoft Technologies India Private Limited",
     "email": "info@aabasoft.com",
     "website": "http://www.aabasoft.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:15.016Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-3",
@@ -33,13 +33,13 @@
     "company_name": "Aarbee Structures Pvt.Ltd",
     "email": "aarbee@aarbeestructures.com",
     "website": "http://www.aarbeestructures.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:15.340Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-4",
@@ -47,13 +47,13 @@
     "company_name": "Abel Techsoft Private Limited",
     "email": "info@abeltechsoft.com",
     "website": "http://www.abeltechsoft.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:29.881Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-5",
@@ -61,13 +61,13 @@
     "company_name": "Accelray Technologies Pvt Ltd",
     "email": "info@accelray.com",
     "website": "http://www.accelray.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:26.689Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-6",
@@ -75,13 +75,13 @@
     "company_name": "Aceware Fintech Services Pvt Ltd (Radiant Acemoney)",
     "email": "info@acemoney.in",
     "website": "http://www.acemoney.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:27.917Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-7",
@@ -89,13 +89,13 @@
     "company_name": "Acube Innovations",
     "email": "contact-if@acube.co",
     "website": "http://acubeinnovations.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:49.220Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-8",
@@ -103,13 +103,13 @@
     "company_name": "adesso India Private Ltd",
     "email": "careers@adesso.in",
     "website": "http://www.adesso.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:49.422Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-9",
@@ -117,13 +117,13 @@
     "company_name": "Advenser Engineering Services Private Limited",
     "email": "info@advenser.com",
     "website": "http://www.advenser.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:54:55.789Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-10",
@@ -131,13 +131,13 @@
     "company_name": "Affiliated Computer Services of India, A Xerox Company",
     "email": "praseel.nambiar@xerox.com",
     "website": "http://www.xerox.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:12.769Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-11",
@@ -145,13 +145,13 @@
     "company_name": "Airo Global Software Pvt Ltd",
     "email": "hiring@airoglobalsoftware.com",
     "website": "http://www.airoglobal.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:06.776Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-12",
@@ -159,13 +159,13 @@
     "company_name": "Al Tomouh IT Pvt Ltd",
     "email": "atitpl@suhailbahwangroup.com",
     "website": "http://www.altomouhit.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:14.650Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-13",
@@ -173,13 +173,13 @@
     "company_name": "ALB Technologies Pvt Ltd",
     "email": "hr@accuratelegalbilling.com",
     "website": "http://www.accuratelegalbilling.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:24.358Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-14",
@@ -187,13 +187,13 @@
     "company_name": "ALTOS Technologies",
     "email": "info@altostechnologies.in",
     "website": "http://altostechnologies.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:18.811Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-15",
@@ -201,13 +201,13 @@
     "company_name": "Amatosoft",
     "email": "mailtogenius@gmail.com",
     "website": "http://amatosoft.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:28.658Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-16",
@@ -215,13 +215,13 @@
     "company_name": "Amla Consultancy Pvt Ltd",
     "email": "info@amlaconsultancy.com",
     "website": "http://www.amlaconsultancy.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:38.984Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-17",
@@ -229,13 +229,13 @@
     "company_name": "Amplitude Software Systems Pvt Ltd",
     "email": "hr@jupiterbs.com",
     "website": "http://www.jupiterbs.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:32.142Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-18",
@@ -243,13 +243,13 @@
     "company_name": "Appadore Private Limited",
     "email": "info@appadore.com",
     "website": "http://www.appadore.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:49.653Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-19",
@@ -257,13 +257,13 @@
     "company_name": "Applied Payments Technology Pvt Ltd.",
     "email": "info@appliedpaymentstech.com",
     "website": "http://www.appliedpaymentstech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:07.898Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-20",
@@ -271,13 +271,13 @@
     "company_name": "Array Platforms Pvt Ltd",
     "email": "neha.r@array.team",
     "website": "http://array.team",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:55:56.941Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-21",
@@ -285,13 +285,13 @@
     "company_name": "Art Technology and Software.",
     "email": "art-hr@artechsoft.com",
     "website": "http://www.artechsoft.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:13.715Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-22",
@@ -299,13 +299,13 @@
     "company_name": "Aspire Systems Digital Private Limited",
     "email": "keerthana.jayaraj@aspiresys.com",
     "website": "http://www.aspiresys.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:31.311Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-23",
@@ -313,13 +313,13 @@
     "company_name": "Banzan Studios",
     "email": "info@banzan.co",
     "website": "http://www.banzan.co",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:10.422Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-24",
@@ -327,13 +327,13 @@
     "company_name": "Beinex Consulting Pvt Ltd",
     "email": "careers@beinex.com",
     "website": "http://www.beinex.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:35.248Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-25",
@@ -341,13 +341,13 @@
     "company_name": "Beth Soft Technologies India Private Limited",
     "email": "info@bethsofttechnologies.com",
     "website": "http://www.bethsofttechnologies.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:56.212Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-26",
@@ -355,13 +355,13 @@
     "company_name": "Bhooshan's Junior",
     "email": "info@bhooshansjr.in",
     "website": "http://www.bhooshansjr.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:32.540Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-27",
@@ -369,13 +369,13 @@
     "company_name": "BIMEX Engineers",
     "email": "info@bimexeng.com",
     "website": "http://bimexeng.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:58.362Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-28",
@@ -397,13 +397,13 @@
     "company_name": "BJ Corps Technologies (OPC) Private Limited",
     "email": "info@bjcorps.com",
     "website": "http://www.bjcorps.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:56:56.808Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-30",
