@@ -693,6 +693,7 @@ export default function DashboardPage() {
         onRefreshData={() => fetchAuthoritativeCompanies(true)}
         isRefreshing={isRefreshing}
         onSignOut={handleSignOut}
+        activeTab="calls"
       />
 
       {/* Main Content Area */}

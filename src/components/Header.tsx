@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Shield, LogOut, RefreshCw, UserCheck, ChevronDown, Layers } from 'lucide-react';
+import Link from 'next/link';
+import { Shield, LogOut, RefreshCw, UserCheck, ChevronDown, Layers, Mail, Phone } from 'lucide-react';
 import { TEAM_MEMBERS, TeamMemberName, CallingPhase } from '@/types';
 
 interface HeaderProps {
@@ -19,6 +20,7 @@ interface HeaderProps {
   onRefreshData: () => void;
   isRefreshing: boolean;
   onSignOut: () => void;
+  activeTab?: 'calls' | 'mail';
 }
 
 export function Header({
@@ -33,6 +35,7 @@ export function Header({
   onRefreshData,
   isRefreshing,
   onSignOut,
+  activeTab = 'calls',
 }: HeaderProps) {
   const [isTeammateDropdownOpen, setIsTeammateDropdownOpen] = React.useState(false);
 
@@ -105,54 +108,92 @@ export function Header({
             </div>
           </div>
 
-          {/* Center (Desktop / Tablet): Prominent Phase Selector */}
-          <div className="hidden sm:flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => onSelectPhase('Phase 1')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
-                selectedPhase === 'Phase 1'
-                  ? 'bg-white text-blue-700 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-blue-600" />
-              <span>Phase 1</span>
-              {phase1Count !== undefined && (
+          {/* Center (Desktop / Tablet): Nav Tabs + Phase Selector */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Feature Tabs: Calls vs Automated Mail */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+              <Link
+                href="/"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'calls'
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <Phone className="w-3.5 h-3.5 text-blue-600" />
+                <span>Call Tracker</span>
+              </Link>
+              <Link
+                href="/automated-mail"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'mail'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <Mail className={`w-3.5 h-3.5 ${activeTab === 'mail' ? 'text-white' : 'text-indigo-600'}`} />
+                <span>Automated Mail</span>
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  className={`px-1.5 py-0.2 rounded-full text-[9px] font-extrabold ${
+                    activeTab === 'mail' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'
+                  }`}
+                >
+                  NEW
+                </span>
+              </Link>
+            </div>
+
+            {/* Prominent Phase Selector (when on calling tab) */}
+            {activeTab === 'calls' && (
+              <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => onSelectPhase('Phase 1')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
                     selectedPhase === 'Phase 1'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-slate-200 text-slate-600'
+                      ? 'bg-white text-blue-700 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
-                  {phase1Count}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectPhase('Phase 2')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
-                selectedPhase === 'Phase 2'
-                  ? 'bg-white text-blue-700 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Phase 2</span>
-              {phase2Count !== undefined && (
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  <Layers className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Phase 1</span>
+                  {phase1Count !== undefined && (
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        selectedPhase === 'Phase 1'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {phase1Count}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectPhase('Phase 2')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
                     selectedPhase === 'Phase 2'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-slate-200 text-slate-600'
+                      ? 'bg-white text-blue-700 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
-                  {phase2Count}
-                </span>
-              )}
-            </button>
+                  <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Phase 2</span>
+                  {phase2Count !== undefined && (
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        selectedPhase === 'Phase 2'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {phase2Count}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right: Teammate Profile, Refresh & Sign Out */}
@@ -231,36 +272,67 @@ export function Header({
         </div>
       </div>
 
-      {/* Mobile Phase Switcher Row */}
-      <div className="sm:hidden flex items-center justify-between px-3.5 py-1.5 bg-slate-50 border-t border-slate-200/80">
-        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-          <Layers className="w-3.5 h-3.5 text-blue-600" />
-          Select Phase:
-        </span>
-        <div className="flex items-center bg-slate-200/70 p-0.5 rounded-lg border border-slate-300/60 text-xs">
-          <button
-            type="button"
-            onClick={() => onSelectPhase('Phase 1')}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
-              selectedPhase === 'Phase 1'
-                ? 'bg-white text-blue-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Phase 1 {phase1Count !== undefined ? `(${phase1Count})` : ''}
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelectPhase('Phase 2')}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
-              selectedPhase === 'Phase 2'
-                ? 'bg-white text-blue-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Phase 2 {phase2Count !== undefined ? `(${phase2Count})` : ''}
-          </button>
+      {/* Mobile Navigation & Phase Switcher Row */}
+      <div className="md:hidden flex flex-col px-3.5 py-1.5 bg-slate-50 border-t border-slate-200/80 gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          {/* Mobile Tabs */}
+          <div className="flex items-center bg-slate-200/70 p-0.5 rounded-lg border border-slate-300/60 text-xs w-full">
+            <Link
+              href="/"
+              className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md text-xs font-bold transition-all ${
+                activeTab === 'calls' ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600'
+              }`}
+            >
+              <Phone className="w-3 h-3 text-blue-600" />
+              <span>Calls</span>
+            </Link>
+            <Link
+              href="/automated-mail"
+              className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md text-xs font-bold transition-all ${
+                activeTab === 'mail' ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600'
+              }`}
+            >
+              <Mail className={`w-3 h-3 ${activeTab === 'mail' ? 'text-white' : 'text-indigo-600'}`} />
+              <span>Auto Mail</span>
+              <span className={`px-1 rounded-full text-[8px] font-extrabold ${activeTab === 'mail' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'}`}>
+                NEW
+              </span>
+            </Link>
+          </div>
         </div>
+
+        {activeTab === 'calls' && (
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/50">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5 text-blue-600" />
+              Phase:
+            </span>
+            <div className="flex items-center bg-slate-200/70 p-0.5 rounded-lg border border-slate-300/60 text-xs">
+              <button
+                type="button"
+                onClick={() => onSelectPhase('Phase 1')}
+                className={`px-3 py-0.5 rounded-md text-xs font-bold transition-all ${
+                  selectedPhase === 'Phase 1'
+                    ? 'bg-white text-blue-700 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Phase 1 {phase1Count !== undefined ? `(${phase1Count})` : ''}
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectPhase('Phase 2')}
+                className={`px-3 py-0.5 rounded-md text-xs font-bold transition-all ${
+                  selectedPhase === 'Phase 2'
+                    ? 'bg-white text-blue-700 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Phase 2 {phase2Count !== undefined ? `(${phase2Count})` : ''}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

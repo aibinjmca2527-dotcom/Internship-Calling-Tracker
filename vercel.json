@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/mail/cron-trigger",
+      "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/mail/cron-trigger",
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/mail/cron-trigger",
+      "schedule": "30 8 * * *"
+    }
+  ]
+}

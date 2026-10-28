@@ -1,0 +1,272 @@
+import fs from 'fs';
+import path from 'path';
+import { EmailCompany, EmailConfig } from '@/types/email';
+import { getSupabaseAdminClient } from '@/lib/supabase/admin';
+
+const companiesPath = path.join(process.cwd(), 'src', 'data', 'email_companies.json');
+const configPath = path.join(process.cwd(), 'src', 'data', 'email_config.json');
+
+/**
+ * Read email companies from local JSON file
+ */
+export function getLocalEmailCompanies(): EmailCompany[] {
+  try {
+    if (fs.existsSync(companiesPath)) {
+      return JSON.parse(fs.readFileSync(companiesPath, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error reading local email companies:', e);
+  }
+  return [];
+}
+
+/**
+ * Save email companies to local JSON file safely (never throws on read-only filesystem)
+ */
+export function saveLocalEmailCompanies(companies: EmailCompany[]): void {
+  try {
+    fs.writeFileSync(companiesPath, JSON.stringify(companies, null, 2), 'utf8');
+  } catch (e) {
+    // Expected on Vercel read-only filesystem; Supabase is the primary store
+    console.warn('Could not write to local email_companies.json (read-only filesystem):', e);
+  }
+}
+
+/**
+ * Read email config from local JSON file
+ */
+export function getLocalConfig(): EmailConfig {
+  try {
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error reading local config:', e);
+  }
+
+  return {
+    active: true,
+    test_mode: false,
+    test_recipient_email: 'aibinjoseph9605573691@gmail.com',
+    batch_count: 39,
+    schedules: [
+      { id: 'batch-1', label: 'Morning Slot (10:00 AM)', time: '10:00', count: 39, enabled: true },
+      { id: 'batch-2', label: 'Midday Slot (12:00 PM)', time: '12:00', count: 39, enabled: true },
+      { id: 'batch-3', label: 'Afternoon Slot (02:00 PM)', time: '14:00', count: 39, enabled: true },
+    ],
+    template: {
+      subject: 'Request for MCA Internship Opportunity',
+      body: `Dear Team,
+
+We are a team of five final-year MCA students from Saintgits College of Engineering, Kottayam, seeking an internship opportunity as part of our final semester.
+
+We are available for a three-month unpaid internship from January 1 to March 31. We have attached the resumes of all five team members for your reference.
+
+Kindly consider us for a suitable internship opportunity at your company.
+
+Thank you for your time and consideration.
+
+Best regards,
+Final-Year MCA Students
+Saintgits College of Engineering, Kottayam`,
+    },
+    last_run_at: null,
+    next_run_info: 'Ready for automated schedule',
+  };
+}
+
+/**
+ * Save email config to local JSON file safely
+ */
+export function saveLocalConfig(config: EmailConfig): void {
+  try {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Could not write to local email_config.json (read-only filesystem):', e);
+  }
+}
+
+/**
+ * Get all email companies (Supabase primary with fallback to local JSON)
+ */
+export async function getEmailCompaniesList(): Promise<EmailCompany[]> {
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('companies')
+      .select('id, serial_number, company_name, email, email_status, email_sent_at, email_replied_at, email_sent_by_name, email_sent_by_email, email_last_error, email_reply_snippet')
+      .not('email', 'is', null)
+      .order('serial_number', { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      return data.map((c) => ({
+        id: c.id,
+        serial_number: c.serial_number,
+        company_name: c.company_name,
+        email: c.email || '',
+        status: (c.email_status as EmailCompany['status']) || 'PENDING',
+        sent_at: c.email_sent_at || null,
+        replied_at: c.email_replied_at || null,
+        last_error: c.email_last_error || null,
+        reply_snippet: c.email_reply_snippet || null,
+        sent_by_name: c.email_sent_by_name || null,
+        sent_by_email: c.email_sent_by_email || null,
+      }));
+    }
+  } catch (err) {
+    console.warn('Supabase query failed, falling back to local email_companies.json:', err);
+  }
+
+  return getLocalEmailCompanies();
+}
+
+/**
+ * Update an email company's status in Supabase and local JSON
+ */
+export async function updateEmailCompanyStatus(
+  companyId: string | number,
+  updates: {
+    status: 'PENDING' | 'QUEUED' | 'SENT' | 'FAILED' | 'REPLIED';
+    sent_at?: string | null;
+    replied_at?: string | null;
+    sent_by_name?: string | null;
+    sent_by_email?: string | null;
+    last_error?: string | null;
+    reply_snippet?: string | null;
+  }
+): Promise<void> {
+  // 1. Update in local file cache
+  const localList = getLocalEmailCompanies();
+  const localIdx = localList.findIndex(
+    (c) => c.id === companyId || c.serial_number === companyId || c.company_name === companyId
+  );
+  if (localIdx !== -1) {
+    localList[localIdx] = {
+      ...localList[localIdx],
+      ...updates,
+    };
+    saveLocalEmailCompanies(localList);
+  }
+
+  // 2. Update in Supabase
+  try {
+    const supabase = getSupabaseAdminClient();
+    const query = typeof companyId === 'number'
+      ? supabase.from('companies').update({
+          email_status: updates.status,
+          email_sent_at: updates.sent_at,
+          email_replied_at: updates.replied_at,
+          email_sent_by_name: updates.sent_by_name,
+          email_sent_by_email: updates.sent_by_email,
+          email_last_error: updates.last_error,
+          email_reply_snippet: updates.reply_snippet,
+        }).eq('serial_number', companyId)
+      : supabase.from('companies').update({
+          email_status: updates.status,
+          email_sent_at: updates.sent_at,
+          email_replied_at: updates.replied_at,
+          email_sent_by_name: updates.sent_by_name,
+          email_sent_by_email: updates.sent_by_email,
+          email_last_error: updates.last_error,
+          email_reply_snippet: updates.reply_snippet,
+        }).or(`id.eq.${companyId},company_name.eq.${companyId}`);
+
+    await query;
+
+    // Log to audit table
+    if (updates.status === 'SENT' || updates.status === 'FAILED' || updates.status === 'REPLIED') {
+      const targetCompany = localIdx !== -1 ? localList[localIdx] : null;
+      await supabase.from('email_logs').insert({
+        company_name: targetCompany?.company_name || String(companyId),
+        recipient_email: targetCompany?.email || 'unknown',
+        sent_by_name: updates.sent_by_name,
+        sent_by_email: updates.sent_by_email,
+        status: updates.status,
+        error_message: updates.last_error,
+        reply_snippet: updates.reply_snippet,
+        sent_at: updates.sent_at || new Date().toISOString(),
+        replied_at: updates.replied_at,
+      });
+    }
+  } catch (err) {
+    console.warn('Could not update company in Supabase:', err);
+  }
+}
+
+/**
+ * Get email schedule configuration (Supabase primary with local fallback)
+ */
+export async function getEmailConfig(): Promise<EmailConfig> {
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('email_schedule_settings')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) {
+      return {
+        active: data.active,
+        test_mode: data.test_mode,
+        test_recipient_email: data.test_recipient_email || 'aibinjoseph9605573691@gmail.com',
+        batch_count: data.batch_count || 39,
+        schedules: Array.isArray(data.schedules) ? data.schedules : getLocalConfig().schedules,
+        template: {
+          subject: data.subject_template || 'Request for MCA Internship Opportunity',
+          body: data.body_template || getLocalConfig().template.body,
+        },
+        last_run_at: data.last_run_at || null,
+        next_run_info: data.active
+          ? 'Automated schedule active for 10 AM, 12 PM, 2 PM IST'
+          : 'Scheduler is currently paused',
+      };
+    }
+  } catch (err) {
+    console.warn('Could not read email config from Supabase, using local:', err);
+  }
+
+  return getLocalConfig();
+}
+
+/**
+ * Save email schedule configuration
+ */
+export async function saveEmailConfig(config: EmailConfig): Promise<void> {
+  saveLocalConfig(config);
+
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data } = await supabase.from('email_schedule_settings').select('id').limit(1).maybeSingle();
+
+    if (data?.id) {
+      await supabase
+        .from('email_schedule_settings')
+        .update({
+          active: config.active,
+          test_mode: config.test_mode,
+          test_recipient_email: config.test_recipient_email,
+          batch_count: config.batch_count,
+          schedules: config.schedules,
+          subject_template: config.template.subject,
+          body_template: config.template.body,
+          last_run_at: config.last_run_at,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', data.id);
+    } else {
+      await supabase.from('email_schedule_settings').insert({
+        active: config.active,
+        test_mode: config.test_mode,
+        test_recipient_email: config.test_recipient_email,
+        batch_count: config.batch_count,
+        schedules: config.schedules,
+        subject_template: config.template.subject,
+        body_template: config.template.body,
+        last_run_at: config.last_run_at,
+      });
+    }
+  } catch (err) {
+    console.warn('Could not save email config to Supabase:', err);
+  }
+}
