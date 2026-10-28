@@ -20,8 +20,10 @@ async function handleCron(req: Request) {
     return NextResponse.json({ success: false, error: 'Unauthorized cron trigger' }, { status: 401 });
   }
 
+  const force = url.searchParams.get('force') === 'true';
+
   const config = await getEmailConfig();
-  if (!config.active) {
+  if (!config.active && !force) {
     return NextResponse.json({
       success: true,
       skipped: true,
@@ -38,8 +40,6 @@ async function handleCron(req: Request) {
     hour12: false,
   });
   const currentTimeIST = istFormatter.format(now); // e.g. "10:00"
-
-  const force = url.searchParams.get('force') === 'true';
 
   // Check if current IST time matches any enabled schedule
   // E.g. within 20 minutes of the slot time
