@@ -383,13 +383,13 @@
     "company_name": "Binaries",
     "email": "info@binariesindia.com",
     "website": "http://www.binariesindia.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:57:09.506Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-29",
@@ -411,13 +411,13 @@
     "company_name": "Bramma IT Solutions",
     "email": "brammainfo@gmail.com",
     "website": "http://www.brammait.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:57:09.813Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-31",
@@ -425,13 +425,13 @@
     "company_name": "BroadTech IT Solutions Pvt Ltd",
     "email": "contact@broadtech-innovations.com",
     "website": "http://www.broadtech-innovations.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-32",
@@ -439,13 +439,13 @@
     "company_name": "BUBMart Online Stores LLP",
     "email": "info@theibogo.com",
     "website": "http://ibogoapp.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:57:08.316Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-33",
@@ -453,13 +453,13 @@
     "company_name": "Cabot Technology Solutions Pvt. Ltd.",
     "email": "info@cabotsolutions.com",
     "website": "http://www.cabotsolutions.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-34",
@@ -467,13 +467,13 @@
     "company_name": "Calpine Group",
     "email": "info@calpinetech.com",
     "website": null,
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-35",
@@ -481,13 +481,13 @@
     "company_name": "Cascade Revenue Management Pvt. Ltd",
     "email": "hrd@aimagroup.co.uk",
     "website": "http://www.aimabms.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-36",
@@ -495,13 +495,13 @@
     "company_name": "Cavli Wireless",
     "email": "careers@cavliwireless.com",
     "website": "http://www.cavliwireless.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-37",
@@ -509,13 +509,13 @@
     "company_name": "CCS Technologies (P) Ltd",
     "email": "careers@ccs-technologies.com",
     "website": "http://www.ccs-technologies.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-38",
@@ -523,13 +523,13 @@
     "company_name": "Clevero India Pvt. Ltd.",
     "email": "joji@clevero.com",
     "website": "http://www.cleverotel.com",
-    "status": "PENDING",
+    "status": "FAILED",
     "sent_at": null,
     "replied_at": null,
-    "last_error": null,
+    "last_error": "connect ETIMEDOUT 192.178.211.109:465",
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-39",
@@ -537,13 +537,13 @@
     "company_name": "CLOUDVICE",
     "email": "info@cloudvice.com",
     "website": "http://www.cloudvice.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-28T16:58:15.197Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-40",
