@@ -93,9 +93,8 @@ export async function getEmailCompaniesList(): Promise<EmailCompany[]> {
   try {
     const supabase = getSupabaseAdminClient();
     const { data, error } = await supabase
-      .from('companies')
-      .select('id, serial_number, company_name, email, email_status, email_sent_at, email_replied_at, email_sent_by_name, email_sent_by_email, email_last_error, email_reply_snippet')
-      .not('email', 'is', null)
+      .from('email_companies')
+      .select('id, serial_number, company_name, email, website, status, sent_at, replied_at, last_error, reply_snippet, sent_by_name, sent_by_email')
       .order('serial_number', { ascending: true });
 
     if (!error && data && data.length > 0) {
@@ -104,13 +103,14 @@ export async function getEmailCompaniesList(): Promise<EmailCompany[]> {
         serial_number: c.serial_number,
         company_name: c.company_name,
         email: c.email || '',
-        status: (c.email_status as EmailCompany['status']) || 'PENDING',
-        sent_at: c.email_sent_at || null,
-        replied_at: c.email_replied_at || null,
-        last_error: c.email_last_error || null,
-        reply_snippet: c.email_reply_snippet || null,
-        sent_by_name: c.email_sent_by_name || null,
-        sent_by_email: c.email_sent_by_email || null,
+        website: c.website || undefined,
+        status: (c.status as EmailCompany['status']) || 'PENDING',
+        sent_at: c.sent_at || null,
+        replied_at: c.replied_at || null,
+        last_error: c.last_error || null,
+        reply_snippet: c.reply_snippet || null,
+        sent_by_name: c.sent_by_name || null,
+        sent_by_email: c.sent_by_email || null,
       }));
     }
   } catch (err) {
@@ -189,22 +189,23 @@ export async function updateEmailCompanyStatus(
   // 2. Update in Supabase
   try {
     const supabase = getSupabaseAdminClient();
-    const payload = {
-      email_status: updates.status,
-      email_sent_at: updates.sent_at,
-      email_replied_at: updates.replied_at,
-      email_sent_by_name: updates.sent_by_name,
-      email_sent_by_email: updates.sent_by_email,
-      email_last_error: updates.last_error,
-      email_reply_snippet: updates.reply_snippet,
+    const payload: Record<string, unknown> = {
+      status: updates.status,
+      sent_at: updates.sent_at,
+      replied_at: updates.replied_at,
+      sent_by_name: updates.sent_by_name,
+      sent_by_email: updates.sent_by_email,
+      last_error: updates.last_error,
+      reply_snippet: updates.reply_snippet,
+      updated_at: new Date().toISOString(),
     };
 
     if (serialNumber && !isNaN(serialNumber)) {
-      await supabase.from('companies').update(payload).eq('serial_number', serialNumber);
+      await supabase.from('email_companies').update(payload).eq('serial_number', serialNumber);
     } else if (companyName) {
-      await supabase.from('companies').update(payload).ilike('company_name', companyName);
+      await supabase.from('email_companies').update(payload).ilike('company_name', companyName);
     } else if (email) {
-      await supabase.from('companies').update(payload).ilike('email', email);
+      await supabase.from('email_companies').update(payload).ilike('email', email);
     }
 
     // Log to audit table
