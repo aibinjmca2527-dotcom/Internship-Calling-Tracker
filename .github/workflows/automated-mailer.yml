@@ -31,8 +31,38 @@ jobs:
           TARGET_SECRET="${CRON_SECRET:-infopark_mail_cron_secret_2026}"
           FORCE_VAL="${FORCE:-false}"
 
-          echo "Triggering automated mail cron at $TARGET_URL (Force: $FORCE_VAL)..."
-          RESPONSE=$(curl -s -S --max-time 120 -w "\nHTTP_STATUS:%{http_code}" -H "User-Agent: GitHub-Actions-Scheduler" -X GET "$TARGET_URL/api/mail/cron-trigger?secret=$TARGET_SECRET&force=$FORCE_VAL")
+          # Calculate current IST hour and minute (UTC + 5:30)
+          IST_HOUR=$(TZ="Asia/Kolkata" date +%-H)
+          IST_MIN=$(TZ="Asia/Kolkata" date +%-M)
+          IST_TOTAL_MIN=$((IST_HOUR * 60 + IST_MIN))
+          echo "Current IST Time: ${IST_HOUR}:${IST_MIN} (${IST_TOTAL_MIN} minutes of day)"
+
+          # Match slot based on scheduled hours: 10:00 AM (600m), 12:00 PM (720m), 02:00 PM (840m)
+          TARGET_SLOT=""
+          if [ "$FORCE_VAL" = "true" ]; then
+            echo "Force trigger enabled: proceeding with manual trigger."
+          elif [ "$IST_TOTAL_MIN" -ge 585 ] && [ "$IST_TOTAL_MIN" -le 615 ]; then
+            TARGET_SLOT="batch-1"
+            echo "Matched Morning Slot (10:00 AM IST)"
+          elif [ "$IST_TOTAL_MIN" -ge 705 ] && [ "$IST_TOTAL_MIN" -le 735 ]; then
+            TARGET_SLOT="batch-2"
+            echo "Matched Midday Slot (12:00 PM IST)"
+          elif [ "$IST_TOTAL_MIN" -ge 825 ] && [ "$IST_TOTAL_MIN" -le 855 ]; then
+            TARGET_SLOT="batch-3"
+            echo "Matched Afternoon Slot (02:00 PM IST)"
+          else
+            echo "WARNING: Current time ${IST_HOUR}:${IST_MIN} IST is delayed or outside valid slots (10:00 AM, 12:00 PM, 02:00 PM ±15m)."
+            echo "Skipping trigger to prevent unauthorized execution at unexpected times (like 2:50 PM)."
+            exit 0
+          fi
+
+          REQ_URL="$TARGET_URL/api/mail/cron-trigger?secret=$TARGET_SECRET&force=$FORCE_VAL"
+          if [ -n "$TARGET_SLOT" ]; then
+            REQ_URL="${REQ_URL}&slot=${TARGET_SLOT}"
+          fi
+
+          echo "Triggering automated mail cron at $REQ_URL..."
+          RESPONSE=$(curl -s -S --max-time 120 -w "\nHTTP_STATUS:%{http_code}" -H "User-Agent: GitHub-Actions-Scheduler" -X GET "$REQ_URL")
           HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1 | cut -d: -f2)
 

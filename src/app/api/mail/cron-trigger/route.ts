@@ -64,8 +64,9 @@ async function handleCron(req: Request) {
   // Determine slot:
   // 1. Explicit slot ID passed via query param (e.g. ?slot=batch-1)
   // 2. Or Vercel cron schedule header match (e.g. "30 4 * * *" -> 10:00 AM)
-  // 3. Or closest enabled slot within a generous 75-minute window (handles Hobby cron jitter)
-  // 4. Fallback to first enabled slot if force=true or triggered by scheduled cron
+  // 3. Or closest enabled slot within a strict 15-minute window (prevents delayed triggers like 2:50 PM)
+  // 4. Fallback to first enabled slot only if force=true
+  const MAX_TOLERANCE_MINUTES = 15;
   const scheduleHeader = req.headers.get('x-vercel-cron-schedule');
   let matchedSlot = config.schedules.find((s) => s.enabled && s.id === requestedSlotId);
 
@@ -80,16 +81,16 @@ async function handleCron(req: Request) {
   }
 
   if (!matchedSlot) {
-    // Find closest enabled slot within 75 minutes of current time
+    // Find closest enabled slot within strict 15 minutes of current IST time (10:00, 12:00, 14:00)
     matchedSlot = config.schedules.find((slot) => {
       if (!slot.enabled) return false;
       const [targetH, targetM] = slot.time.split(':').map(Number);
       const targetMinutes = targetH * 60 + targetM;
-      return Math.abs(curMinutesOfDay - targetMinutes) <= 75;
+      return Math.abs(curMinutesOfDay - targetMinutes) <= MAX_TOLERANCE_MINUTES;
     });
   }
 
-  // If force is set or explicitly targeted but no window matched, fallback to first enabled slot
+  // If force is set but no window matched, fallback to first enabled slot
   if (!matchedSlot && force) {
     matchedSlot = config.schedules.find((s) => s.enabled) || config.schedules[0];
   }
@@ -99,10 +100,25 @@ async function handleCron(req: Request) {
       success: true,
       skipped: true,
       currentTimeIST: istTimeStr,
-      message: `No active schedule slot due right now. Current IST: ${istTimeStr}. Configured slots: ${config.schedules
-        .map((s) => `${s.label} (${s.time})`)
-        .join(', ')}`,
+      message: `No active schedule slot due right now. Current IST: ${istTimeStr}. Only slots at 10:00 AM, 12:00 PM, and 02:00 PM IST (±${MAX_TOLERANCE_MINUTES}m) are permitted.`,
     });
+  }
+
+  // Strict time window check: Even if a slot was matched by ID or header, verify it is within ±15m of scheduled time
+  if (matchedSlot && !force) {
+    const [targetH, targetM] = matchedSlot.time.split(':').map(Number);
+    const targetMinutes = targetH * 60 + targetM;
+    const diffMinutes = Math.abs(curMinutesOfDay - targetMinutes);
+
+    if (diffMinutes > MAX_TOLERANCE_MINUTES) {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        slot: matchedSlot.label,
+        currentTimeIST: istTimeStr,
+        message: `Trigger time (${istTimeStr} IST) is ${diffMinutes} minutes away from '${matchedSlot.label}' (${matchedSlot.time} IST). Allowed window is ±${MAX_TOLERANCE_MINUTES}m. Skipped to prevent unexpected execution at arbitrary times like 2:50 PM.`,
+      });
+    }
   }
 
   // Enforce slot-level daily execution lock: A slot can run at most ONCE per calendar day
