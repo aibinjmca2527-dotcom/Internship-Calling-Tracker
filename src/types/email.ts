@@ -32,6 +32,7 @@ export interface ScheduleSlot {
   time: string; // 'HH:MM' (24-hour)
   count: number;
   enabled: boolean;
+  last_executed_date?: string; // 'YYYY-MM-DD' to prevent duplicate execution on same day
 }
 
 export interface EmailTemplate {

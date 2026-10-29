@@ -23,12 +23,16 @@ jobs:
     steps:
       - name: Send Trigger to Vercel API
         env:
-          APP_URL: ${{ secrets.VERCEL_APP_URL || 'https://internship-calling-tracker.vercel.app' }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET || 'infopark_mail_cron_secret_2026' }}
-          FORCE: ${{ github.event.inputs.force || 'false' }}
+          APP_URL: ${{ secrets.VERCEL_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          FORCE: ${{ github.event.inputs.force }}
         run: |
-          echo "Triggering automated mail cron at $APP_URL (Force: $FORCE)..."
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "$APP_URL/api/mail/cron-trigger?secret=$CRON_SECRET&force=$FORCE")
+          TARGET_URL="${APP_URL:-https://internship-calling-tracker.vercel.app}"
+          TARGET_SECRET="${CRON_SECRET:-infopark_mail_cron_secret_2026}"
+          FORCE_VAL="${FORCE:-false}"
+
+          echo "Triggering automated mail cron at $TARGET_URL (Force: $FORCE_VAL)..."
+          RESPONSE=$(curl -s -S --max-time 120 -w "\nHTTP_STATUS:%{http_code}" -H "User-Agent: GitHub-Actions-Scheduler" -X GET "$TARGET_URL/api/mail/cron-trigger?secret=$TARGET_SECRET&force=$FORCE_VAL")
           HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1 | cut -d: -f2)
 

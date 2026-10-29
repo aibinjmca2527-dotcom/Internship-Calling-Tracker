@@ -23,7 +23,8 @@
       "label": "Afternoon Slot (02:00 PM)",
       "time": "14:00",
       "count": 39,
-      "enabled": true
+      "enabled": true,
+      "last_executed_date": "2026-10-29"
     }
   ],
   "template": {

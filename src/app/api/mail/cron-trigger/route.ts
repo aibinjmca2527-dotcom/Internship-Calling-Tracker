@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getEmailConfig } from '@/lib/mail-db';
+import { getEmailConfig, saveEmailConfig } from '@/lib/mail-db';
 import { executeBatchSend } from '@/lib/batch-mailer';
 
 export const maxDuration = 60;
@@ -105,6 +105,18 @@ async function handleCron(req: Request) {
     });
   }
 
+  // Enforce slot-level daily execution lock: A slot can run at most ONCE per calendar day
+  const todayIST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(now);
+  if (matchedSlot?.last_executed_date === todayIST && !force) {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      slot: matchedSlot.label,
+      currentTimeIST: istTimeStr,
+      message: `Slot '${matchedSlot.label}' has already executed today (${todayIST}). Skipped to guarantee exactly one send per slot per day.`,
+    });
+  }
+
   const countToRun = matchedSlot?.count || config.batch_count || 39;
 
   try {
@@ -113,6 +125,11 @@ async function handleCron(req: Request) {
       count: countToRun,
       slotLabel: matchedSlot?.label,
     });
+
+    if (batchResult.success && matchedSlot) {
+      matchedSlot.last_executed_date = todayIST;
+      await saveEmailConfig(config);
+    }
 
     return NextResponse.json({
       success: batchResult.success,
