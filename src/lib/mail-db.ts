@@ -124,7 +124,15 @@ export async function getEmailCompaniesList(): Promise<EmailCompany[]> {
  * Update an email company's status in Supabase and local JSON
  */
 export async function updateEmailCompanyStatus(
-  companyId: string | number,
+  companyIdentifier:
+    | {
+        id?: string | number;
+        serial_number?: number;
+        company_name?: string;
+        email?: string;
+      }
+    | string
+    | number,
   updates: {
     status: 'PENDING' | 'QUEUED' | 'SENT' | 'FAILED' | 'REPLIED';
     sent_at?: string | null;
@@ -135,11 +143,41 @@ export async function updateEmailCompanyStatus(
     reply_snippet?: string | null;
   }
 ): Promise<void> {
+  // Extract identifiers
+  let serialNumber: number | null = null;
+  let companyName: string | null = null;
+  let email: string | null = null;
+
+  if (typeof companyIdentifier === 'number') {
+    serialNumber = companyIdentifier;
+  } else if (typeof companyIdentifier === 'string') {
+    if (companyIdentifier.startsWith('email-')) {
+      const parsed = parseInt(companyIdentifier.replace('email-', ''), 10);
+      if (!isNaN(parsed)) serialNumber = parsed;
+    } else {
+      companyName = companyIdentifier;
+    }
+  } else if (typeof companyIdentifier === 'object' && companyIdentifier !== null) {
+    if (typeof companyIdentifier.serial_number === 'number') {
+      serialNumber = companyIdentifier.serial_number;
+    } else if (typeof companyIdentifier.id === 'string' && companyIdentifier.id.startsWith('email-')) {
+      const parsed = parseInt(companyIdentifier.id.replace('email-', ''), 10);
+      if (!isNaN(parsed)) serialNumber = parsed;
+    }
+    if (companyIdentifier.company_name) companyName = companyIdentifier.company_name;
+    if (companyIdentifier.email) email = companyIdentifier.email;
+  }
+
   // 1. Update in local file cache
   const localList = getLocalEmailCompanies();
-  const localIdx = localList.findIndex(
-    (c) => c.id === companyId || c.serial_number === companyId || c.company_name === companyId
-  );
+  const localIdx = localList.findIndex((c) => {
+    if (serialNumber && c.serial_number === serialNumber) return true;
+    if (companyName && c.company_name.toLowerCase() === companyName.toLowerCase()) return true;
+    if (email && c.email.toLowerCase() === email.toLowerCase()) return true;
+    if (typeof companyIdentifier === 'string' && (c.id === companyIdentifier || c.company_name === companyIdentifier)) return true;
+    return false;
+  });
+
   if (localIdx !== -1) {
     localList[localIdx] = {
       ...localList[localIdx],
@@ -151,33 +189,29 @@ export async function updateEmailCompanyStatus(
   // 2. Update in Supabase
   try {
     const supabase = getSupabaseAdminClient();
-    const query = typeof companyId === 'number'
-      ? supabase.from('companies').update({
-          email_status: updates.status,
-          email_sent_at: updates.sent_at,
-          email_replied_at: updates.replied_at,
-          email_sent_by_name: updates.sent_by_name,
-          email_sent_by_email: updates.sent_by_email,
-          email_last_error: updates.last_error,
-          email_reply_snippet: updates.reply_snippet,
-        }).eq('serial_number', companyId)
-      : supabase.from('companies').update({
-          email_status: updates.status,
-          email_sent_at: updates.sent_at,
-          email_replied_at: updates.replied_at,
-          email_sent_by_name: updates.sent_by_name,
-          email_sent_by_email: updates.sent_by_email,
-          email_last_error: updates.last_error,
-          email_reply_snippet: updates.reply_snippet,
-        }).or(`id.eq.${companyId},company_name.eq.${companyId}`);
+    const payload = {
+      email_status: updates.status,
+      email_sent_at: updates.sent_at,
+      email_replied_at: updates.replied_at,
+      email_sent_by_name: updates.sent_by_name,
+      email_sent_by_email: updates.sent_by_email,
+      email_last_error: updates.last_error,
+      email_reply_snippet: updates.reply_snippet,
+    };
 
-    await query;
+    if (serialNumber && !isNaN(serialNumber)) {
+      await supabase.from('companies').update(payload).eq('serial_number', serialNumber);
+    } else if (companyName) {
+      await supabase.from('companies').update(payload).ilike('company_name', companyName);
+    } else if (email) {
+      await supabase.from('companies').update(payload).ilike('email', email);
+    }
 
     // Log to audit table
     if (updates.status === 'SENT' || updates.status === 'FAILED' || updates.status === 'REPLIED') {
       const targetCompany = localIdx !== -1 ? localList[localIdx] : null;
       await supabase.from('email_logs').insert({
-        company_name: targetCompany?.company_name || String(companyId),
+        company_name: targetCompany?.company_name || companyName || String(serialNumber || 'unknown'),
         recipient_email: targetCompany?.email || 'unknown',
         sent_by_name: updates.sent_by_name,
         sent_by_email: updates.sent_by_email,

@@ -119,7 +119,7 @@ export async function executeBatchSend({
           });
 
           const sentAt = new Date().toISOString();
-          await updateEmailCompanyStatus(company.id, {
+          await updateEmailCompanyStatus(company, {
             status: 'SENT',
             sent_at: sentAt,
             sent_by_name: sender.name,
@@ -139,7 +139,7 @@ export async function executeBatchSend({
           console.error(`Error sending to ${company.company_name} via ${sender.name}:`, err);
           const errMsg = err instanceof Error ? err.message : 'Unknown error';
 
-          await updateEmailCompanyStatus(company.id, {
+          await updateEmailCompanyStatus(company, {
             status: 'FAILED',
             last_error: errMsg,
             sent_by_name: sender.name,
