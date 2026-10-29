@@ -40,6 +40,21 @@ export async function executeBatchSend({
 } = {}): Promise<BatchSendResult> {
   const config = await getEmailConfig();
 
+  // 1. Anti-Duplicate Cooldown Guard: Minimum 10 minutes required between batches
+  if (config.last_run_at) {
+    const lastRunTime = new Date(config.last_run_at).getTime();
+    const timeSinceLastRunMinutes = (Date.now() - lastRunTime) / (1000 * 60);
+    if (timeSinceLastRunMinutes < 10) {
+      return {
+        success: false,
+        sentCount: 0,
+        failedCount: 0,
+        message: `Cooldown active: A batch was already executed ${Math.floor(timeSinceLastRunMinutes)} minute(s) ago. At least 10 minutes must pass between batches to prevent duplicate emails to companies.`,
+        error: `Cooldown active: Batch already sent ${Math.floor(timeSinceLastRunMinutes)} minute(s) ago.`,
+      };
+    }
+  }
+
   // Default batch size: 39 companies (13 per sender across Aibin, Lakshmi, Seba)
   const count = typeof requestedCount === 'number' && requestedCount > 0 ? requestedCount : config.batch_count || 39;
   const isTestMode = config.test_mode;
@@ -59,8 +74,22 @@ export async function executeBatchSend({
 
   const companies = await getEmailCompaniesList();
 
-  // Pick next pending companies
-  const pendingCompanies = companies.filter((c) => c.status === 'PENDING').slice(0, count);
+  // 2. Anti-Duplicate Email Guard: Exclude any email address already contacted
+  const alreadyContactedEmails = new Set(
+    companies
+      .filter((c) => c.status === 'SENT' || c.status === 'REPLIED' || Boolean(c.sent_at))
+      .map((c) => c.email.toLowerCase().trim())
+  );
+
+  // Pick next pending companies that have never been contacted
+  const pendingCompanies = companies
+    .filter(
+      (c) =>
+        c.status === 'PENDING' &&
+        !c.sent_at &&
+        !alreadyContactedEmails.has(c.email.toLowerCase().trim())
+    )
+    .slice(0, count);
 
   // If no pending companies left, automatically turn off schedule safely
   if (pendingCompanies.length === 0) {
