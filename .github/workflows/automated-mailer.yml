@@ -1,0 +1,41 @@
+name: Automated Mail Scheduler (Bypasses Vercel Hobby Cron Limit)
+
+on:
+  schedule:
+    # Schedule runs in UTC (IST is UTC + 5:30)
+    # 04:30 UTC = 10:00 AM IST (Monday to Friday)
+    - cron: '30 4 * * 1-5'
+    # 06:30 UTC = 12:00 PM IST (Monday to Friday)
+    - cron: '30 6 * * 1-5'
+    # 08:30 UTC = 02:00 PM IST (Monday to Friday)
+    - cron: '30 8 * * 1-5'
+  # Allows triggering manually from the GitHub Actions tab anytime
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force send batch regardless of schedule window'
+        required: false
+        default: 'false'
+
+jobs:
+  trigger-mail-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Trigger to Vercel API
+        env:
+          APP_URL: ${{ secrets.VERCEL_APP_URL || 'https://internship-calling-tracker.vercel.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET || 'infopark_mail_cron_secret_2026' }}
+          FORCE: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          echo "Triggering automated mail cron at $APP_URL (Force: $FORCE)..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "$APP_URL/api/mail/cron-trigger?secret=$CRON_SECRET&force=$FORCE")
+          HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1 | cut -d: -f2)
+
+          echo "Response Body: $HTTP_BODY"
+          echo "HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Cron trigger failed with HTTP status $HTTP_STATUS"
+            exit 1
+          fi
