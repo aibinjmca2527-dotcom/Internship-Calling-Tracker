@@ -40,6 +40,16 @@ async function handleCron(req: Request) {
   const force = url.searchParams.get('force') === 'true';
   const requestedSlotId = url.searchParams.get('slot');
 
+  // Hard safety lock: Automated background cron is permanently disabled.
+  // Emails will ONLY send when manually triggered via the website button or force=true.
+  if (!force) {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      message: 'Automated background cron triggers are permanently DISABLED. Outreach runs strictly via manual button trigger from the website dashboard.',
+    });
+  }
+
   const config = await getEmailConfig();
   if (!config.active && !force) {
     return NextResponse.json({
