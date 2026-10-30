@@ -139,7 +139,8 @@ async function handleCron(req: Request) {
     // Direct in-memory execution: avoids internal HTTP network hops and lambda timeouts
     const batchResult = await executeBatchSend({
       count: countToRun,
-      slotLabel: matchedSlot?.label,
+      slotLabel: matchedSlot?.label || (force ? 'Manual Force Trigger' : undefined),
+      force,
     });
 
     if (batchResult.success && matchedSlot) {

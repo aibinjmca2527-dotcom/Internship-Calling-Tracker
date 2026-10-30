@@ -39,6 +39,7 @@ export function AutomatedMailDashboard() {
 
   // State
   const [isCheckingReplies, setIsCheckingReplies] = useState(false);
+  const [isSendingBatch, setIsSendingBatch] = useState(false);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [actionAlert, setActionAlert] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
@@ -252,6 +253,53 @@ export function AutomatedMailDashboard() {
     }
   };
 
+  // Safe manual batch trigger with confirmation and real-time dashboard refresh
+  const handleTriggerBatchNow = async () => {
+    if (isSendingBatch) return;
+
+    const remaining = stats.pending;
+    if (remaining === 0) {
+      showAlert('info', 'All 229 companies have already been contacted!');
+      return;
+    }
+
+    const batchSize = Math.min(39, remaining);
+    const confirmed = window.confirm(
+      `Trigger batch of ${batchSize} emails now?\n\n` +
+      `• 13 emails will be sent by Aibin Joseph\n` +
+      `• 13 emails will be sent by Lakshmi Sabu\n` +
+      `• 13 emails will be sent by Seba M Thampy\n` +
+      `• All 5 student resumes are attached\n\n` +
+      `Strict 1-email-per-company duplicate protection is fully active.\n\n` +
+      `Click OK to begin sending.`
+    );
+
+    if (!confirmed) return;
+
+    setIsSendingBatch(true);
+    showAlert('info', `Dispatching ${batchSize} emails across 3 sender accounts... Please wait ~30 seconds.`);
+
+    try {
+      const res = await fetch('/api/mail/send-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: batchSize }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showAlert('success', `Batch successfully sent! ${data.sentCount} emails delivered. Dashboard refreshed.`);
+        await fetchData();
+      } else {
+        showAlert('error', data.message || data.error || 'Batch trigger encountered an issue.');
+      }
+    } catch {
+      showAlert('error', 'Network error triggering batch. Please check connection.');
+    } finally {
+      setIsSendingBatch(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Alert Notification */}
@@ -297,7 +345,27 @@ export function AutomatedMailDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Manual Trigger Button */}
+          <button
+            onClick={handleTriggerBatchNow}
+            disabled={isSendingBatch || stats.pending === 0}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50"
+            title="Trigger next batch of 39 emails immediately"
+          >
+            {isSendingBatch ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sending 39 Emails (~30s)...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Trigger Batch Now (39 Emails) 🚀</span>
+              </>
+            )}
+          </button>
+
           {/* Master Active / Pause Toggle */}
           <button
             onClick={handleToggleActive}

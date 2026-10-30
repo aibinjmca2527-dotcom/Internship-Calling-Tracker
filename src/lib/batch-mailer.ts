@@ -1,3 +1,5 @@
+let isBatchRunning = false;
+
 import { sendOutreachEmail, getActiveSenders } from '@/lib/mailer';
 import {
   getEmailCompaniesList,
@@ -34,22 +36,34 @@ export interface BatchSendResult {
 export async function executeBatchSend({
   count: requestedCount,
   slotLabel,
+  force = false,
 }: {
   count?: number;
   slotLabel?: string;
+  force?: boolean;
 } = {}): Promise<BatchSendResult> {
+  if (isBatchRunning) {
+    return {
+      success: false,
+      sentCount: 0,
+      failedCount: 0,
+      message: 'A batch send is already running right now. Please wait for it to finish (~30s).',
+      error: 'Concurrency lock: another batch is already executing.',
+    };
+  }
   const config = await getEmailConfig();
 
   // 1. Anti-Duplicate Cooldown Guard: Minimum 10 minutes required between batches
   if (config.last_run_at) {
     const lastRunTime = new Date(config.last_run_at).getTime();
     const timeSinceLastRunMinutes = (Date.now() - lastRunTime) / (1000 * 60);
-    if (timeSinceLastRunMinutes < 10) {
+    const cooldownThreshold = force ? 3 : 10;
+    if (timeSinceLastRunMinutes < cooldownThreshold) {
       return {
         success: false,
         sentCount: 0,
         failedCount: 0,
-        message: `Cooldown active: A batch was already executed ${Math.floor(timeSinceLastRunMinutes)} minute(s) ago. At least 10 minutes must pass between batches to prevent duplicate emails to companies.`,
+        message: `Cooldown active: A batch was already executed ${Math.floor(timeSinceLastRunMinutes)} minute(s) ago. At least ${cooldownThreshold} minutes must pass between batches to guarantee zero duplicate emails.`,
         error: `Cooldown active: Batch already sent ${Math.floor(timeSinceLastRunMinutes)} minute(s) ago.`,
       };
     }
@@ -77,7 +91,7 @@ export async function executeBatchSend({
   // 2. Anti-Duplicate Email Guard: Exclude any email address already contacted
   const alreadyContactedEmails = new Set(
     companies
-      .filter((c) => c.status === 'SENT' || c.status === 'REPLIED' || Boolean(c.sent_at))
+      .filter((c) => c.status === 'SENT' || c.status === 'REPLIED' || c.status === 'QUEUED' || Boolean(c.sent_at))
       .map((c) => c.email.toLowerCase().trim())
   );
 
@@ -107,6 +121,20 @@ export async function executeBatchSend({
     };
   }
 
+  // 3. Concurrency Lock & Immediate QUEUED Pre-Reservation
+  // This guarantees that even if multiple requests arrive, no company is EVER contacted twice.
+  isBatchRunning = true;
+  config.last_run_at = new Date().toISOString();
+  await saveEmailConfig(config);
+
+  for (const company of pendingCompanies) {
+    company.status = 'QUEUED';
+    await updateEmailCompanyStatus(company, {
+      status: 'QUEUED',
+      last_error: null,
+    });
+  }
+
   // Partition pending companies evenly across the active senders
   const senderQueues: { sender: typeof activeSenders[0]; companies: typeof pendingCompanies }[] = activeSenders.map(
     (s) => ({ sender: s, companies: [] })
@@ -131,7 +159,8 @@ export async function executeBatchSend({
 
   // Process all sender queues concurrently.
   // Each sender sends their batch with a 3.5s anti-spam natural gap between sends.
-  await Promise.all(
+  try {
+    await Promise.all(
     senderQueues.map(async ({ sender, companies: queue }) => {
       for (let i = 0; i < queue.length; i++) {
         const company = queue[i];
@@ -187,7 +216,7 @@ export async function executeBatchSend({
 
         // Anti-spam gap between consecutive sends for this specific sender account
         if (i < queue.length - 1) {
-          await sleep(3500);
+          await sleep(2000);
         }
       }
     })
@@ -218,4 +247,7 @@ export async function executeBatchSend({
     remainingPending,
     results,
   };
+  } finally {
+    isBatchRunning = false;
+  }
 }
