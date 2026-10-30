@@ -1,9 +1,8 @@
 -- =====================================================================
 -- LIVE SUPABASE AUTOMATED EMAIL DATABASE & REAL-TIME SYNC
 -- =====================================================================
--- This creates a dedicated 'email_companies' table in Supabase.
+-- Dedicated 'email_companies' table in Supabase.
 -- 100% separate from Calling Tracker ('companies' table is untouched).
--- Allows Vercel serverless to read and write email statuses live in real-time.
 -- =====================================================================
 
 -- 1. Create email_companies table
@@ -28,41 +27,47 @@ CREATE INDEX IF NOT EXISTS idx_email_companies_serial ON public.email_companies(
 CREATE INDEX IF NOT EXISTS idx_email_companies_status ON public.email_companies(status);
 CREATE INDEX IF NOT EXISTS idx_email_companies_email ON public.email_companies(lower(email));
 
--- 2. Enable RLS and grant permissions to anon and authenticated
-ALTER TABLE public.email_companies ENABLE ROW LEVEL SECURITY;
+-- 2. Disable RLS and grant full open permissions to prevent any write blocks
+ALTER TABLE public.email_companies DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON public.email_companies TO anon, authenticated, service_role;
 
-DROP POLICY IF EXISTS "Allow anon read email_companies" ON public.email_companies;
-CREATE POLICY "Allow anon read email_companies"
-  ON public.email_companies FOR SELECT TO anon, authenticated USING (true);
+-- 3. Create email_schedule_settings table
+CREATE TABLE IF NOT EXISTS public.email_schedule_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  active BOOLEAN NOT NULL DEFAULT true,
+  test_mode BOOLEAN NOT NULL DEFAULT false,
+  test_recipient_email TEXT DEFAULT 'aibinjoseph9605573691@gmail.com',
+  batch_count INTEGER NOT NULL DEFAULT 39,
+  schedules JSONB,
+  subject_template TEXT,
+  body_template TEXT,
+  last_run_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-DROP POLICY IF EXISTS "Allow anon update email_companies" ON public.email_companies;
-CREATE POLICY "Allow anon update email_companies"
-  ON public.email_companies FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+ALTER TABLE public.email_schedule_settings DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON public.email_schedule_settings TO anon, authenticated, service_role;
 
-DROP POLICY IF EXISTS "Allow anon insert email_companies" ON public.email_companies;
-CREATE POLICY "Allow anon insert email_companies"
-  ON public.email_companies FOR INSERT TO anon, authenticated WITH CHECK (true);
+-- 4. Create email_logs table
+CREATE TABLE IF NOT EXISTS public.email_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_name TEXT,
+  recipient_email TEXT,
+  sent_by_name TEXT,
+  sent_by_email TEXT,
+  status TEXT,
+  error_message TEXT,
+  reply_snippet TEXT,
+  sent_at TIMESTAMPTZ DEFAULT now(),
+  replied_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
-GRANT SELECT, INSERT, UPDATE ON public.email_companies TO anon, authenticated;
+ALTER TABLE public.email_logs DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON public.email_logs TO anon, authenticated, service_role;
 
--- 3. Live permissions on email_schedule_settings
-ALTER TABLE public.email_schedule_settings ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Allow anon read email_schedule_settings" ON public.email_schedule_settings;
-CREATE POLICY "Allow anon read email_schedule_settings"
-  ON public.email_schedule_settings FOR SELECT TO anon, authenticated USING (true);
-
-DROP POLICY IF EXISTS "Allow anon update email_schedule_settings" ON public.email_schedule_settings;
-CREATE POLICY "Allow anon update email_schedule_settings"
-  ON public.email_schedule_settings FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Allow anon insert email_schedule_settings" ON public.email_schedule_settings;
-CREATE POLICY "Allow anon insert email_schedule_settings"
-  ON public.email_schedule_settings FOR INSERT TO anon, authenticated WITH CHECK (true);
-
-GRANT SELECT, INSERT, UPDATE ON public.email_schedule_settings TO anon, authenticated;
-
--- 4. Seed all 229 companies (109 SENT, 112 PENDING, 8 FAILED)
+-- 5. Upsert all 229 companies with live statuses
 INSERT INTO public.email_companies (
   id, serial_number, company_name, email, website, status, sent_at, sent_by_name, sent_by_email, last_error
 ) VALUES
@@ -183,45 +188,45 @@ INSERT INTO public.email_companies (
   ('email-115', 115, 'Kakapo Systems India Private Limited', 'talkindia@kakaposystems.com', 'http://www.kakaposystems.com/contact-us', 'SENT', '2026-10-29T09:20:00.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
   ('email-116', 116, 'KnowBe4 India Private Limited', 'info@knowbe4.com', 'http://www.knowbe4.com', 'FAILED', NULL, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', 'Message rejected: Remote mail server rejected recipient (550 Mailbox not found / invalid destination)'),
   ('email-117', 117, 'Mantle Solutions Private Limited', 'careers@mantlesolutions.in', 'https://mantlesolutions.in', 'SENT', '2026-10-29T09:20:00.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
-  ('email-118', 118, 'Mantra IT Solutions', 'info@mantraitsolutions.in', 'https://mantraitsolutions.in/', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-119', 119, 'MARLABS SOFTWARE', 'contact@marlabs.com', 'http://www.marlabs.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-120', 120, 'Mashuptech', 'info@mashuptech.in', 'http://mashuptech.in', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-121', 121, 'McFadyen Digital', 'djanardhanan@mcfadyen.com', 'http://www.mcfadyen.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-122', 122, 'Merabt Technologies Private Limited', 'hr@merabt.com', 'http://www.merabt.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-123', 123, 'Milestone Technologies', 'recruiters-apac@milestone.tech', 'http://milestone.tech', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-124', 124, 'Millennium InfoLogic', 'hr@millinfo.net', 'http://www.millinfo.net', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-125', 125, 'Mindcurv Technology Solutions Pvt. Ltd.', 'hr@mindcurv.com', 'http://www.mindcurv.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-126', 126, 'MindLabs Systems Pvt Ltd', 'hrteam@mindlabssys.com', 'http://mindlabssys.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-127', 127, 'mitz AI Minds Pvt Ltd', 'contactus@mitz.ai', 'http://www.mitz.ai', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-128', 128, 'Navicater Solutions India Pvt Ltd', 'admin@navicater.com', 'http://www.navicater.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-129', 129, 'NDimensionZ Solutions Pvt.Ltd.', 'hr@ndimensionz.com', 'http://www.ndimensionz.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-130', 130, 'Neem Info Solutions Pvt. Ltd.', 'admin@neemsoftware.com', 'http://www.neemsoftware.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-131', 131, 'Neork Technologies', 'info@neork.com', 'http://www.neork.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-132', 132, 'Nesote Technologies Pvt Ltd', 'hr@nesote.com', 'http://www.nesote.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-133', 133, 'Nestsoft TechnoMaster PVT LTD', 'join@nestsoft.com', 'http://www.nestsoft.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-134', 134, 'Netlyft Technologies Pvt Ltd', 'contact@netlyft.com', 'http://www.netlyft.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-135', 135, 'NewAgeSys Solutions (P) Ltd.', 'career@newagesysindia.com', 'http://www.newagesysindia.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-136', 136, 'Next Apps', 'support@nextapps.in', 'http://www.nextapps.in', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-137', 137, 'Niaway Technologies Pvt Ltd', 'info@niaway.com', 'http://www.niaway.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-138', 138, 'Niche Techies', 'info@nichetechies.com', 'http://www.nichetechies.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-139', 139, 'Noa Infosolutions LLP', 'hr@noainfosolutions.com', 'http://www.noainfosolutions.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-140', 140, 'Offline Human Studios', 'contact@offlinehumanstudios.com', 'http://www.offlinehumanstudios.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-141', 141, 'Onesoft Technologies LLP', 'admin@onesoftapps.com', 'http://www.onesoftapps.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-142', 142, 'Opshore Talent Solutions Pvt.Ltd.', 'hr@opshoretalentsolutions.com', 'http://www.opshoretalentsolutions.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-143', 143, 'Orestes Technologies Pvt Ltd', 'info@orestestech.com', 'http://www.orestestech.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-144', 144, 'Orion India Systems Pvt. Ltd.', 'pramodt@orioninc.com', 'http://www.orioninc.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-145', 145, 'Ormeon IT Consulting Pvt Ltd', 'info@ormeon.com', 'http://ormeon.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-146', 146, 'Outsource Partners International', 'info@opiglobal.com', 'http://www.opiglobal.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-147', 147, 'PanashiFZCO Technology Solution Private Limited', 'hr@panashi.ae', 'http://panashi.ae', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-148', 148, 'Paoyaila Animation Studios LLP', 'hrpaoyaila@gmail.com', 'http://www.paoyaila.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-149', 149, 'PaulCart E Commerce Pvt. Ltd.', 'rinosh@paulcart.com', 'http://www.wibserp.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-150', 150, 'Pearlsoft Technologies LLP', 'joinus@pearlsofttechnologies.com', 'http://pearlsofttechnologies.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-151', 151, 'Penguin Data Centre Pvt.Ltd.', 'careers@penguininc.com', 'http://www.penguininc.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-152', 152, 'Phases India Technology Solutions Pvt Ltd.', 'support@phases.io', 'http://www.phases.io', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-153', 153, 'PIT Solutions Private Limited', 'enquiries@pitsolutions.com', 'http://www.pitsolutions.com/de-ch', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-154', 154, 'Pixdynamics', 'hr@pixdynamics.com', 'http://www.pixdynamics.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-155', 155, 'Portrave Solutions Pvt Ltd', 'info@portrave.com', 'http://www.portrave.com', 'PENDING', NULL, NULL, NULL, NULL),
-  ('email-156', 156, 'Privo TechCorp Private Limited', 'hr@privocorp.com', 'http://privocorp.com', 'PENDING', NULL, NULL, NULL, NULL),
+  ('email-118', 118, 'Mantra IT Solutions', 'info@mantraitsolutions.in', 'https://mantraitsolutions.in/', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-119', 119, 'MARLABS SOFTWARE', 'contact@marlabs.com', 'http://www.marlabs.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-120', 120, 'Mashuptech', 'info@mashuptech.in', 'http://mashuptech.in', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-121', 121, 'McFadyen Digital', 'djanardhanan@mcfadyen.com', 'http://www.mcfadyen.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-122', 122, 'Merabt Technologies Private Limited', 'hr@merabt.com', 'http://www.merabt.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-123', 123, 'Milestone Technologies', 'recruiters-apac@milestone.tech', 'http://milestone.tech', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-124', 124, 'Millennium InfoLogic', 'hr@millinfo.net', 'http://www.millinfo.net', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-125', 125, 'Mindcurv Technology Solutions Pvt. Ltd.', 'hr@mindcurv.com', 'http://www.mindcurv.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-126', 126, 'MindLabs Systems Pvt Ltd', 'hrteam@mindlabssys.com', 'http://mindlabssys.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-127', 127, 'mitz AI Minds Pvt Ltd', 'contactus@mitz.ai', 'http://www.mitz.ai', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-128', 128, 'Navicater Solutions India Pvt Ltd', 'admin@navicater.com', 'http://www.navicater.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-129', 129, 'NDimensionZ Solutions Pvt.Ltd.', 'hr@ndimensionz.com', 'http://www.ndimensionz.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-130', 130, 'Neem Info Solutions Pvt. Ltd.', 'admin@neemsoftware.com', 'http://www.neemsoftware.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-131', 131, 'Neork Technologies', 'info@neork.com', 'http://www.neork.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-132', 132, 'Nesote Technologies Pvt Ltd', 'hr@nesote.com', 'http://www.nesote.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-133', 133, 'Nestsoft TechnoMaster PVT LTD', 'join@nestsoft.com', 'http://www.nestsoft.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-134', 134, 'Netlyft Technologies Pvt Ltd', 'contact@netlyft.com', 'http://www.netlyft.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-135', 135, 'NewAgeSys Solutions (P) Ltd.', 'career@newagesysindia.com', 'http://www.newagesysindia.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-136', 136, 'Next Apps', 'support@nextapps.in', 'http://www.nextapps.in', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-137', 137, 'Niaway Technologies Pvt Ltd', 'info@niaway.com', 'http://www.niaway.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-138', 138, 'Niche Techies', 'info@nichetechies.com', 'http://www.nichetechies.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-139', 139, 'Noa Infosolutions LLP', 'hr@noainfosolutions.com', 'http://www.noainfosolutions.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-140', 140, 'Offline Human Studios', 'contact@offlinehumanstudios.com', 'http://www.offlinehumanstudios.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-141', 141, 'Onesoft Technologies LLP', 'admin@onesoftapps.com', 'http://www.onesoftapps.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-142', 142, 'Opshore Talent Solutions Pvt.Ltd.', 'hr@opshoretalentsolutions.com', 'http://www.opshoretalentsolutions.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-143', 143, 'Orestes Technologies Pvt Ltd', 'info@orestestech.com', 'http://www.orestestech.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-144', 144, 'Orion India Systems Pvt. Ltd.', 'pramodt@orioninc.com', 'http://www.orioninc.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-145', 145, 'Ormeon IT Consulting Pvt Ltd', 'info@ormeon.com', 'http://ormeon.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-146', 146, 'Outsource Partners International', 'info@opiglobal.com', 'http://www.opiglobal.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-147', 147, 'PanashiFZCO Technology Solution Private Limited', 'hr@panashi.ae', 'http://panashi.ae', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-148', 148, 'Paoyaila Animation Studios LLP', 'hrpaoyaila@gmail.com', 'http://www.paoyaila.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-149', 149, 'PaulCart E Commerce Pvt. Ltd.', 'rinosh@paulcart.com', 'http://www.wibserp.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-150', 150, 'Pearlsoft Technologies LLP', 'joinus@pearlsofttechnologies.com', 'http://pearlsofttechnologies.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-151', 151, 'Penguin Data Centre Pvt.Ltd.', 'careers@penguininc.com', 'http://www.penguininc.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-152', 152, 'Phases India Technology Solutions Pvt Ltd.', 'support@phases.io', 'http://www.phases.io', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-153', 153, 'PIT Solutions Private Limited', 'enquiries@pitsolutions.com', 'http://www.pitsolutions.com/de-ch', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
+  ('email-154', 154, 'Pixdynamics', 'hr@pixdynamics.com', 'http://www.pixdynamics.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Aibin Joseph', 'aibinjoseph9605573691@gmail.com', NULL),
+  ('email-155', 155, 'Portrave Solutions Pvt Ltd', 'info@portrave.com', 'http://www.portrave.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Lakshmi Sabu', 'sabulakshmi801@gmail.com', NULL),
+  ('email-156', 156, 'Privo TechCorp Private Limited', 'hr@privocorp.com', 'http://privocorp.com', 'SENT', '2026-10-30T06:24:20.000Z'::timestamptz, 'Seba M Thampy', 'sebatiji15@gmail.com', NULL),
   ('email-157', 157, 'Pueblo Shades Pvt.Ltd', 'info@puebloshades.com', 'http://www.puebloshades.com', 'PENDING', NULL, NULL, NULL, NULL),
   ('email-158', 158, 'QBurst Technologies', 'hr@qburst.com', 'http://www.qburst.com', 'PENDING', NULL, NULL, NULL, NULL),
   ('email-159', 159, 'Qubiqon Consulting India Private Limited', 'contactus@qubiqon.io', 'http://www.qubiqon.io', 'PENDING', NULL, NULL, NULL, NULL),

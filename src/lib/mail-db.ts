@@ -186,42 +186,73 @@ export async function updateEmailCompanyStatus(
     saveLocalEmailCompanies(localList);
   }
 
-  // 2. Update in Supabase
+  // 2. Update in Supabase (with resilient upsert)
   try {
     const supabase = getSupabaseAdminClient();
-    const payload: Record<string, unknown> = {
-      status: updates.status,
-      sent_at: updates.sent_at,
-      replied_at: updates.replied_at,
-      sent_by_name: updates.sent_by_name,
-      sent_by_email: updates.sent_by_email,
-      last_error: updates.last_error,
-      reply_snippet: updates.reply_snippet,
-      updated_at: new Date().toISOString(),
-    };
+    const targetCompany = localIdx !== -1 ? localList[localIdx] : null;
 
-    if (serialNumber && !isNaN(serialNumber)) {
-      await supabase.from('email_companies').update(payload).eq('serial_number', serialNumber);
-    } else if (companyName) {
-      await supabase.from('email_companies').update(payload).ilike('company_name', companyName);
-    } else if (email) {
-      await supabase.from('email_companies').update(payload).ilike('email', email);
-    }
+    if (targetCompany) {
+      const upsertPayload = {
+        id: targetCompany.id,
+        serial_number: targetCompany.serial_number,
+        company_name: targetCompany.company_name,
+        email: targetCompany.email,
+        website: targetCompany.website || null,
+        status: updates.status,
+        sent_at: updates.sent_at !== undefined ? updates.sent_at : targetCompany.sent_at,
+        replied_at: updates.replied_at !== undefined ? updates.replied_at : targetCompany.replied_at,
+        sent_by_name: updates.sent_by_name !== undefined ? updates.sent_by_name : targetCompany.sent_by_name,
+        sent_by_email: updates.sent_by_email !== undefined ? updates.sent_by_email : targetCompany.sent_by_email,
+        last_error: updates.last_error !== undefined ? updates.last_error : targetCompany.last_error,
+        reply_snippet: updates.reply_snippet !== undefined ? updates.reply_snippet : targetCompany.reply_snippet,
+        updated_at: new Date().toISOString(),
+      };
 
-    // Log to audit table
-    if (updates.status === 'SENT' || updates.status === 'FAILED' || updates.status === 'REPLIED') {
-      const targetCompany = localIdx !== -1 ? localList[localIdx] : null;
-      await supabase.from('email_logs').insert({
-        company_name: targetCompany?.company_name || companyName || String(serialNumber || 'unknown'),
-        recipient_email: targetCompany?.email || 'unknown',
+      const { error: upsertErr } = await supabase
+        .from('email_companies')
+        .upsert(upsertPayload, { onConflict: 'serial_number' });
+
+      if (upsertErr) {
+        console.error('Supabase upsert error for company', targetCompany.company_name, ':', upsertErr.message);
+      }
+    } else {
+      const payload: Record<string, unknown> = {
+        status: updates.status,
+        sent_at: updates.sent_at,
+        replied_at: updates.replied_at,
         sent_by_name: updates.sent_by_name,
         sent_by_email: updates.sent_by_email,
-        status: updates.status,
-        error_message: updates.last_error,
+        last_error: updates.last_error,
         reply_snippet: updates.reply_snippet,
-        sent_at: updates.sent_at || new Date().toISOString(),
-        replied_at: updates.replied_at,
-      });
+        updated_at: new Date().toISOString(),
+      };
+
+      if (serialNumber && !isNaN(serialNumber)) {
+        await supabase.from('email_companies').update(payload).eq('serial_number', serialNumber);
+      } else if (companyName) {
+        await supabase.from('email_companies').update(payload).ilike('company_name', companyName);
+      } else if (email) {
+        await supabase.from('email_companies').update(payload).ilike('email', email);
+      }
+    }
+
+    // Optional audit log (safely isolated)
+    if (updates.status === 'SENT' || updates.status === 'FAILED' || updates.status === 'REPLIED') {
+      try {
+        await supabase.from('email_logs').insert({
+          company_name: targetCompany?.company_name || companyName || String(serialNumber || 'unknown'),
+          recipient_email: targetCompany?.email || 'unknown',
+          sent_by_name: updates.sent_by_name,
+          sent_by_email: updates.sent_by_email,
+          status: updates.status,
+          error_message: updates.last_error,
+          reply_snippet: updates.reply_snippet,
+          sent_at: updates.sent_at || new Date().toISOString(),
+          replied_at: updates.replied_at,
+        });
+      } catch {
+        // Safe to ignore audit log failures
+      }
     }
   } catch (err) {
     console.warn('Could not update company in Supabase:', err);
