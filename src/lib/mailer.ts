@@ -95,8 +95,34 @@ export function getActiveSenders() {
   return senders;
 }
 
+// Reusable Transporters and Preloaded Attachments Cache for High Speed
+const transporterMap = new Map<string, ReturnType<typeof nodemailer.createTransport>>();
+let cachedResumeAttachments: Array<{ filename: string; content: Buffer; contentType: string }> | null = null;
+
+export function getPreloadedResumeAttachments() {
+  if (cachedResumeAttachments && cachedResumeAttachments.length === RESUME_FILES.length) {
+    return cachedResumeAttachments;
+  }
+
+  const resumesDir = path.join(process.cwd(), 'public', 'resumes');
+  cachedResumeAttachments = RESUME_FILES.map((item) => {
+    const fullPath = path.join(resumesDir, item.originalFile);
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`Resume file not found: ${item.originalFile}`);
+    }
+    const content = fs.readFileSync(fullPath);
+    return {
+      filename: item.cleanFilename,
+      content,
+      contentType: 'application/pdf',
+    };
+  });
+
+  return cachedResumeAttachments;
+}
+
 /**
- * Creates Nodemailer Transporter using specified sender credentials
+ * Creates or retrieves reusable pooled Nodemailer Transporter using specified sender credentials
  */
 export function getMailTransporter(sender?: { email: string; password?: string }) {
   const user = sender?.email || process.env.GMAIL_USER;
@@ -106,16 +132,23 @@ export function getMailTransporter(sender?: { email: string; password?: string }
     throw new Error(`Gmail SMTP credentials not configured for sender: ${user || 'default'}`);
   }
 
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
+  if (!transporterMap.has(user)) {
+    transporterMap.set(
       user,
-      pass,
-    },
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 50,
-  });
+      nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user,
+          pass,
+        },
+        pool: true,
+        maxConnections: 3,
+        maxMessages: 100,
+      })
+    );
+  }
+
+  return transporterMap.get(user)!;
 }
 
 /**
@@ -142,7 +175,6 @@ export async function sendOutreachEmail({
   };
 
   const transporter = getMailTransporter(selectedSender);
-  const resumesDir = path.join(process.cwd(), 'public', 'resumes');
 
   // Replace placeholders
   const subject = subjectTemplate
@@ -159,18 +191,8 @@ export async function sendOutreachEmail({
     .map((paragraph) => `<p style="margin: 0 0 14px 0; line-height: 1.6; color: #1e293b; font-size: 15px;">${paragraph.replace(/\n/g, '<br/>')}</p>`)
     .join('');
 
-  // Collect attachments
-  const attachments = RESUME_FILES.map((item) => {
-    const fullPath = path.join(resumesDir, item.originalFile);
-    if (!fs.existsSync(fullPath)) {
-      throw new Error(`Resume file not found: ${item.originalFile}`);
-    }
-    return {
-      filename: item.cleanFilename,
-      path: fullPath,
-      contentType: 'application/pdf',
-    };
-  });
+  // Collect preloaded in-memory attachments
+  const attachments = getPreloadedResumeAttachments();
 
   const mailOptions = {
     from: `"${selectedSender.name} (Saintgits MCA Outreach)" <${selectedSender.email}>`,
