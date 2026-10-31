@@ -42,29 +42,41 @@ export async function checkGmailReplies(knownCompanyEmails: string[]): Promise<D
       const lock = await client.getMailboxLock('INBOX');
 
       try {
-        // Look back at the last 14 days of emails in INBOX
+        // Look back at the last 30 days of emails in INBOX
         const sinceDate = new Date();
-        sinceDate.setDate(sinceDate.getDate() - 14);
+        sinceDate.setDate(sinceDate.getDate() - 30);
 
         const messages = await client.search({ since: sinceDate });
 
         if (messages && messages.length > 0) {
-          const recentUids = messages.slice(-100);
+          const recentUids = messages.slice(-150);
 
           for await (const msg of client.fetch(recentUids, { envelope: true, bodyStructure: true })) {
             const fromAddress = msg.envelope?.from?.[0]?.address?.toLowerCase();
-            const fromName = msg.envelope?.from?.[0]?.name || fromAddress || '';
+            if (!fromAddress) continue;
+
+            const fromName = msg.envelope?.from?.[0]?.name || fromAddress;
             const subject = msg.envelope?.subject || '(No subject)';
             const rawDate = msg.envelope?.date;
             const date = rawDate ? new Date(rawDate).toISOString() : new Date().toISOString();
 
-            if (
-              fromAddress &&
-              (emailSet.has(fromAddress) ||
-                subject.toLowerCase().includes('internship') ||
-                subject.toLowerCase().includes('saintgits') ||
-                fromAddress.includes('aibin12joseph12'))
-            ) {
+            const subLower = subject.toLowerCase();
+            const isPotentialReply =
+              emailSet.has(fromAddress) ||
+              subLower.includes('internship') ||
+              subLower.includes('saintgits') ||
+              subLower.startsWith('re:') ||
+              subLower.startsWith('fw:') ||
+              fromAddress.includes('aibin12joseph12');
+
+            const isSystemBounce =
+              fromAddress.includes('postmaster') ||
+              fromAddress.includes('mailer-daemon') ||
+              fromAddress.includes('jobalert') ||
+              fromAddress.includes('indeed') ||
+              subLower.includes('undeliverable');
+
+            if (isPotentialReply && !isSystemBounce) {
               allDetected.push({
                 fromEmail: fromAddress,
                 fromName,
