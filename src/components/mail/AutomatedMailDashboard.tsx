@@ -71,35 +71,13 @@ export function AutomatedMailDashboard() {
       const confData = await confRes.json();
 
       if (compData.success) {
-        let mergedList = compData.companies || [];
+        // Discard any stale local cache to guarantee 100% cross-device consistency
         try {
-          const cached = localStorage.getItem('infopark_email_companies_cache');
-          if (cached) {
-            const parsedCache: EmailCompany[] = JSON.parse(cached);
-            const cachedSentMap = new Map(
-              parsedCache
-                .filter((c) => c.status === 'SENT' || c.status === 'REPLIED')
-                .map((c) => [c.serial_number, c])
-            );
-
-            mergedList = mergedList.map((sc: EmailCompany) => {
-              const localOverride = cachedSentMap.get(sc.serial_number);
-              if (localOverride && sc.status === 'PENDING') {
-                return { ...sc, ...localOverride };
-              }
-              return sc;
-            });
-          }
-        } catch {
-          // ignore cache error
-        }
-
-        setCompanies(mergedList);
-        try {
-          localStorage.setItem('infopark_email_companies_cache', JSON.stringify(mergedList));
+          localStorage.removeItem('infopark_email_companies_cache');
         } catch {
           // ignore
         }
+        setCompanies(compData.companies || []);
       }
       if (confData.success && confData.config) {
         setConfig(confData.config);
@@ -287,11 +265,7 @@ export function AutomatedMailDashboard() {
               return c;
             });
 
-            try {
-              localStorage.setItem('infopark_email_companies_cache', JSON.stringify(next));
-            } catch {
-              // ignore
-            }
+
             return next;
           });
         }
@@ -319,10 +293,8 @@ export function AutomatedMailDashboard() {
 
     const batchSize = Math.min(39, remaining);
     const confirmed = window.confirm(
-      `Trigger batch of ${batchSize} emails now?\n\n` +
-      `• 13 emails will be sent by Aibin Joseph\n` +
-      `• 13 emails will be sent by Lakshmi Sabu\n` +
-      `• 13 emails will be sent by Seba M Thampy\n` +
+      `Trigger ${batchSize === remaining ? `final batch of ${batchSize}` : `batch of ${batchSize}`} emails now?\n\n` +
+      `• Emails will be distributed evenly across active sender accounts (Aibin, Lakshmi, Seba)\n` +
       `• All 5 student resumes are attached\n\n` +
       `Strict 1-email-per-company duplicate protection is fully active.\n\n` +
       `Click OK to begin sending.`
@@ -373,11 +345,7 @@ export function AutomatedMailDashboard() {
               return c;
             });
 
-            try {
-              localStorage.setItem('infopark_email_companies_cache', JSON.stringify(next));
-            } catch {
-              // ignore
-            }
+
             return next;
           });
         }
@@ -451,12 +419,18 @@ export function AutomatedMailDashboard() {
             {isSendingBatch ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Sending 39 Emails (~30s)...</span>
+                <span>Sending {Math.min(39, stats.pending)} Emails (~15s)...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                <span>Trigger Batch Now (39 Emails) 🚀</span>
+                <span>
+                  {stats.pending === 0
+                    ? 'All 229 Sent! 🎉'
+                    : stats.pending <= 39
+                    ? `Trigger Final Batch Now (${stats.pending} Emails) 🚀`
+                    : `Trigger Batch Now (${Math.min(39, stats.pending)} Emails) 🚀`}
+                </span>
               </>
             )}
           </button>

@@ -1052,7 +1052,7 @@
   {
     "id": "email-76",
     "serial_number": 76,
-    "company_name": "Extravelmoney\u00a0Technosol Private Limited",
+    "company_name": "Extravelmoney Technosol Private Limited",
     "email": "join@extravelmoney.com",
     "website": "http://www.extravelmoney.com",
     "status": "SENT",
@@ -2539,13 +2539,13 @@
     "company_name": "Spiralcode Innovates LLP",
     "email": "info@spiralcode.in",
     "website": "http://www.spiralcode.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:03.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-183",
@@ -2581,13 +2581,13 @@
     "company_name": "Syriac Consultancy Services Private Limited",
     "email": "career@syriacconsultancy.com",
     "website": "https://www.syriacconsultancy.com/",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:03.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-186",
@@ -2609,13 +2609,13 @@
     "company_name": "Talk Digital Pvt. Ltd.",
     "email": "hr@talkdigital.co.in",
     "website": "http://www.talkdigital.com.au",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:03.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-188",
@@ -2623,13 +2623,13 @@
     "company_name": "Tamcherry Technologies Private Limited",
     "email": "info@tamcherry.com",
     "website": "http://www.tamcherry.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:06.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-189",
@@ -2651,13 +2651,13 @@
     "company_name": "TECFORZ INNOVATIONS",
     "email": "info@tecforz.com",
     "website": "http://tecforz.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:06.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-191",
@@ -2665,13 +2665,13 @@
     "company_name": "Techfriar Technologies",
     "email": "hr@techfriar.com",
     "website": "http://www.techfriar.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:07.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-192",
@@ -2679,13 +2679,13 @@
     "company_name": "Technowave ID Systems PVT.LTD.",
     "email": "hr@technowavegroup.com",
     "website": "http://www.technowavegroup.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:08.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-193",
@@ -2693,13 +2693,13 @@
     "company_name": "TechTaliya Informatics Pvt. Ltd.",
     "email": "info@techtaliya.com",
     "website": "http://techtaliya.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:08.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-194",
@@ -2707,13 +2707,13 @@
     "company_name": "Techversant Infotech Pvt Ltd",
     "email": "careers@techversantinfotech.com",
     "website": "http://www.techversantinfotech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:09.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-195",
@@ -2721,13 +2721,13 @@
     "company_name": "Tecnostac Systems Private Limited",
     "email": "hr@tecnostac.com",
     "website": "http://www.tecnostac.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:09.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-196",
@@ -2735,13 +2735,13 @@
     "company_name": "Telious Technologies Pvt Ltd",
     "email": "jobs@telious.com",
     "website": "http://www.telious.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:11.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-197",
@@ -2749,13 +2749,13 @@
     "company_name": "Testing Mavens Software Pvt  Ltd",
     "email": "hire@testingmavens.com",
     "website": "http://www.testingmavens.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:11.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-198",
@@ -2763,13 +2763,13 @@
     "company_name": "Thinkpalm Technologies Pvt.Ltd",
     "email": "info@thinkpalm.com",
     "website": "http://www.thinkpalm.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:12.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-199",
@@ -2777,13 +2777,13 @@
     "company_name": "ThoughtMinds System Pvt Ltd",
     "email": "careers@thoughtminds.io",
     "website": "https://thoughtminds.ai/",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:13.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-200",
@@ -2791,13 +2791,13 @@
     "company_name": "Thriveminds Technologies Pvt. Ltd.",
     "email": "hr@thrivemindstechno.com",
     "website": "http://www.thrivemindsinnovations.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:13.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-201",
@@ -2805,13 +2805,13 @@
     "company_name": "Titan Tech Emirates Pvt Ltd",
     "email": "hr@titantechemirates.com",
     "website": "http://titantechemirates.com",
-    "status": "PENDING",
-    "sent_at": null,
-    "replied_at": null,
+    "status": "REPLIED",
+    "sent_at": "2026-10-31T09:18:14.000Z",
+    "replied_at": "2026-10-31T09:38:24.000Z",
     "last_error": null,
-    "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "reply_snippet": "Hridya Prabhakaran (hr@titantechemirates.com): Re: Request for MCA Internship Opportunity",
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-202",
@@ -2819,13 +2819,13 @@
     "company_name": "TNP Consultancy Private Limited",
     "email": "communication.india@tnpconsultants.com",
     "website": "http://www.tnpconsultants.com/en/tnp-india",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:15.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-203",
@@ -2833,13 +2833,13 @@
     "company_name": "Toobler Technologies Pvt. Ltd.",
     "email": "info@toobler.com",
     "website": "http://www.toobler.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:15.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-204",
@@ -2847,13 +2847,13 @@
     "company_name": "TouchWorld Technology",
     "email": "info@touchworldtech.com",
     "website": "http://www.touchworldtech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:16.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-205",
@@ -2861,13 +2861,13 @@
     "company_name": "Trafoss Pvt.Ltd",
     "email": "info@trafoss.com",
     "website": "http://www.trafoss.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:17.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-206",
@@ -2875,13 +2875,13 @@
     "company_name": "Travancore Analytics Pvt.Ltd.",
     "email": "careers@travancoreanalytics.com",
     "website": "http://www.travancoreanalytics.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:17.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-207",
@@ -2889,13 +2889,13 @@
     "company_name": "Tukxi India Private Ltd",
     "email": "support@tukxi.in",
     "website": "http://www.tukxi.in",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:18.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-208",
@@ -2903,13 +2903,13 @@
     "company_name": "Turqosoft Solutions Pvt. Ltd.",
     "email": "info@turqosoft.com",
     "website": "http://www.turqosoft.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:19.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-209",
@@ -2917,13 +2917,13 @@
     "company_name": "Unilaw Global Private Limited",
     "email": "info@unilawtech.com",
     "website": "http://www.unilawtech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:19.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-210",
@@ -2931,13 +2931,13 @@
     "company_name": "US Technology International Pvt Ltd",
     "email": "info@ust-global.com",
     "website": "http://www.ust.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:20.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-211",
@@ -2945,13 +2945,13 @@
     "company_name": "Vaisesika Consulting Private Limited",
     "email": "talentacquisition@vaisesika.in",
     "website": "http://vaisesikaconsulting.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:22.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-212",
@@ -2959,13 +2959,13 @@
     "company_name": "Varishtha Infotech Services Pvt Ltd.",
     "email": "vandana@varishthainfotech.com",
     "website": "http://www.varishthainfotech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:21.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-213",
@@ -2973,13 +2973,13 @@
     "company_name": "Veeble SoftTech (P) Ltd.",
     "email": "careers@veeble.com",
     "website": "http://www.veeble.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:22.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-214",
@@ -2987,13 +2987,13 @@
     "company_name": "Verteil Technologies Private Limited,",
     "email": "contact@verteil.com",
     "website": "http://www.verteil.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:25.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-215",
@@ -3001,13 +3001,13 @@
     "company_name": "Viewy Digital P(Ltd)",
     "email": "info@viewydigital.com",
     "website": "http://www.viewydigital.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:23.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-216",
@@ -3015,13 +3015,13 @@
     "company_name": "Violet Frames",
     "email": "info@violetframes.com",
     "website": "http://www.violetframes.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:24.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-217",
@@ -3029,13 +3029,13 @@
     "company_name": "VIPoint Solutions Pvt Ltd",
     "email": "hr@vipointsolutions.net",
     "website": "http://www.vipointsolutions.net",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:27.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-218",
@@ -3043,13 +3043,13 @@
     "company_name": "Virtual Impulse Technologies",
     "email": "vimptech@gmail.com",
     "website": "https://vimptech.com/",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:25.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-219",
@@ -3057,13 +3057,13 @@
     "company_name": "Vivish Technologies Private Limited",
     "email": "hr@mygate.in",
     "website": "http://mygate.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:26.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-220",
@@ -3071,13 +3071,13 @@
     "company_name": "Vortexen Dynamics",
     "email": "hr@vortexen.com",
     "website": "http://www.vortexen.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:30.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-221",
@@ -3085,13 +3085,13 @@
     "company_name": "Voyon Technology Pvt Ltd",
     "email": "careers@voyon.net",
     "website": "http://www.voyonfolks.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:26.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-222",
@@ -3099,13 +3099,13 @@
     "company_name": "Vtrio Solutions Private Limited",
     "email": "hr@vtrio.com",
     "website": "http://www.vtrio.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:28.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Aibin Joseph",
+    "sent_by_email": "aibinjoseph9605573691@gmail.com"
   },
   {
     "id": "email-223",
@@ -3113,13 +3113,13 @@
     "company_name": "Webdura Technologies",
     "email": "careers@webdura.in",
     "website": "http://www.webduratech.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:32.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Lakshmi Sabu",
+    "sent_by_email": "sabulakshmi801@gmail.com"
   },
   {
     "id": "email-224",
@@ -3127,13 +3127,13 @@
     "company_name": "Wipro Limited",
     "email": "jothish.s90@wipro.com",
     "website": "http://www.wipro.com",
-    "status": "PENDING",
-    "sent_at": null,
+    "status": "SENT",
+    "sent_at": "2026-10-31T09:18:28.000Z",
     "replied_at": null,
     "last_error": null,
     "reply_snippet": null,
-    "sent_by_name": null,
-    "sent_by_email": null
+    "sent_by_name": "Seba M Thampy",
+    "sent_by_email": "sebatiji15@gmail.com"
   },
   {
     "id": "email-225",

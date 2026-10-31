@@ -2,35 +2,35 @@
   "active": true,
   "test_mode": false,
   "test_recipient_email": "aibinjoseph9605573691@gmail.com",
-  "batch_count": 39,
+  "batch_count": 5,
   "schedules": [
     {
       "id": "batch-1",
       "label": "Morning Slot (10:00 AM)",
       "time": "10:00",
-      "count": 39,
+      "count": 5,
       "enabled": true
     },
     {
       "id": "batch-2",
       "label": "Midday Slot (12:00 PM)",
       "time": "12:00",
-      "count": 39,
+      "count": 5,
       "enabled": true
     },
     {
       "id": "batch-3",
       "label": "Afternoon Slot (02:00 PM)",
       "time": "14:00",
-      "count": 39,
+      "count": 5,
       "enabled": true,
-      "last_executed_date": "2026-10-29"
+      "last_executed_date": "2026-10-31"
     }
   ],
   "template": {
     "subject": "Request for MCA Internship Opportunity",
     "body": "Dear Team,\n\nWe are a team of five final-year MCA students from Saintgits College of Engineering, Kottayam, seeking an internship opportunity as part of our final semester.\n\nWe are available for a three-month unpaid internship from January 1 to March 31. We have attached the resumes of all five team members for your reference.\n\nKindly consider us for a suitable internship opportunity at your company.\n\nThank you for your time and consideration.\n\nBest regards,\nFinal-Year MCA Students\nSaintgits College of Engineering, Kottayam"
   },
-  "last_run_at": "2026-10-30T09:12:31.000Z",
-  "next_run_info": "Batch 5 recorded (185 sent total, 44 pending remaining)"
+  "last_run_at": "2026-10-31T09:18:32.000Z",
+  "next_run_info": "Batch 6 recorded (216 sent/replied total, 5 pending remaining for final batch)"
 }
